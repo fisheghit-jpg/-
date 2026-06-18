@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation System</title>
+<title>Reservation System Pro</title>
 
 <style>
 body{
@@ -12,6 +12,7 @@ background:#0f172a;
 color:white;
 }
 
+/* CARDS */
 .card{
 background:#111c33;
 margin:15px;
@@ -19,6 +20,7 @@ padding:15px;
 border-radius:10px;
 }
 
+/* INPUT */
 input{
 width:100%;
 padding:10px;
@@ -29,6 +31,7 @@ background:#1e293b;
 color:white;
 }
 
+/* BUTTON */
 button{
 padding:10px;
 background:#38bdf8;
@@ -39,32 +42,52 @@ cursor:pointer;
 margin-top:10px;
 }
 
+/* TABLE */
 table{
 width:100%;
 border-collapse:collapse;
 margin-top:10px;
+background:#0b1220;
+border-radius:8px;
+overflow:hidden;
 }
 
-th,td{
-padding:8px;
+th{
+background:#1e293b;
+color:#38bdf8;
+padding:10px;
+text-align:left;
+}
+
+td{
+padding:10px;
 border-bottom:1px solid #1e293b;
-white-space:nowrap;
+}
+
+tr:nth-child(even){
+background:#0f172a;
 }
 
 tr:hover{
 background:#1e293b;
+}
+
+/* TITLE */
+h2{
+text-align:center;
+color:#38bdf8;
 }
 </style>
 </head>
 
 <body>
 
-<!-- FIXED DATE -->
+<!-- TITLE -->
 <div class="card">
 <h2>18 JUIN 2026</h2>
 </div>
 
-<!-- ADD RESERVATION -->
+<!-- FORM -->
 <div class="card">
 <h3>Ajouter Réservation</h3>
 
@@ -98,8 +121,8 @@ background:#1e293b;
 <th>N°</th>
 <th>ETABLISSEMENT</th>
 <th>PERIODE</th>
-<th>AUJOURD'HUI</th>
-<th>DELETE</th>
+<th>STATUS</th>
+<th>SUPPRIMER</th>
 </tr>
 </thead>
 
@@ -135,7 +158,7 @@ save();
 render();
 }
 
-/* ===== COLOR STATUS ===== */
+/* ===== STATUS COLORS ===== */
 function getColor(s){
 s=s.toLowerCase();
 
@@ -170,12 +193,11 @@ t.innerHTML+=`
 <td>${r.etab}</td>
 <td>${r.periode}</td>
 <td style="color:${getColor(r.status)}">${r.status}</td>
-<td><button onclick="del(${i})">🗑</button></td>
+<td><button onclick="del(${i})" style="background:#ef4444;color:white;">X</button></td>
 </tr>
 `;
 });
 }
-render();
 
 /* ===== SEARCH ===== */
 function searchTable(){
@@ -201,6 +223,11 @@ let a=document.createElement("a");
 a.href=URL.createObjectURL(blob);
 a.download="reservations.csv";
 a.click();
+}
+
+/* ===== AUTO LOAD TABLE ===== */
+window.onload = function(){
+render();
 }
 
 </script>
