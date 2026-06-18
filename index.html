@@ -1,444 +1,282 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<title>Reservation Gold</title>
-
+<title>Reservation System Pro</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI;
-}
-
-
-
 body{
-
-background:#0F172A;
-
-color:white;
-
-padding:20px;
-
+margin:0;
+font-family:Segoe UI;
+background:#0b1220;
+color:#e5e7eb;
 }
 
-
-
-/* Cards */
-
-.card{
-
-background:#111827;
-
-padding:20px;
-
-margin-bottom:20px;
-
-border-radius:15px;
-
-border:1px solid rgba(212,175,55,.15);
-
-box-shadow:
-0 0 15px rgba(0,0,0,.3);
-
-}
-
-
-
-/* title */
-
-h1{
-
+/* HEADER */
+.header{
 text-align:center;
-
-color:#D4AF37;
-
-margin-bottom:15px;
-
-font-size:30px;
-
+padding:18px;
+font-size:20px;
+color:#f5d36c;
+letter-spacing:2px;
 }
 
-
-
-/* inputs */
-
-input,textarea{
-
-width:100%;
-
+/* CARD */
+.card{
+margin:12px;
 padding:12px;
-
-margin-top:8px;
-
-margin-bottom:8px;
-
-border:none;
-
-outline:none;
-
-border-radius:10px;
-
-background:#1E293B;
-
-color:white;
-
-font-size:15px;
-
+background:#111827;
+border-radius:12px;
+border:1px solid #2a2f3a;
 }
 
-
-
-input:focus,
-textarea:focus{
-
-box-shadow:
-
-0 0 5px #D4AF37;
-
-}
-
-
-
-textarea{
-
-height:180px;
-
-resize:none;
-
-}
-
-
-
-
-/* buttons */
-
-button{
-
-padding:12px 18px;
-
-border:none;
-
-cursor:pointer;
-
-border-radius:10px;
-
-font-weight:bold;
-
-margin:5px;
-
-transition:.2s;
-
-}
-
-
-
-.gold{
-
-background:#D4AF37;
-
-color:black;
-
-}
-
-
-
-.red{
-
-background:#dc2626;
-
-color:white;
-
-}
-
-
-
-.blue{
-
-background:#2563eb;
-
-color:white;
-
-}
-
-
-
-button:hover{
-
-opacity:.9;
-
-transform:translateY(-2px);
-
-}
-
-
-
-
-/* table */
-
-table{
-
+/* INPUT */
+input,select,textarea{
 width:100%;
-
-border-collapse:collapse;
-
-margin-top:15px;
-
-overflow:hidden;
-
-border-radius:10px;
-
+padding:10px;
+margin:6px 0;
+border-radius:8px;
+border:none;
+background:#0f172a;
+color:white;
+outline:none;
 }
 
+input:focus,select:focus,textarea:focus{
+border:1px solid #f5d36c;
+}
 
+/* BUTTON */
+button{
+padding:10px 12px;
+margin:5px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#f5d36c;
+color:#0b1220;
+font-weight:bold;
+}
+
+/* TABLE */
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
 
 th{
-
-background:#1E293B;
-
-color:#D4AF37;
-
-padding:12px;
-
+color:#f5d36c;
+padding:10px;
+border-bottom:1px solid #2a2f3a;
+font-size:13px;
 }
-
-
 
 td{
-
-padding:12px;
-
-text-align:center;
-
+padding:10px;
 border-bottom:1px solid #1f2937;
-
+font-size:13px;
 }
-
-
-
-tr:nth-child(even){
-
-background:#0b1220;
-
-}
-
-
 
 tr:hover{
-
-background:#1E293B;
-
+background:#1e293b;
 }
-
-
-
-/* search */
-
-.search{
-
-margin-top:10px;
-
-}
-
-
-
 </style>
-
-
 </head>
-
 
 <body>
 
+<div class="header">RESERVATION SYSTEM PRO</div>
 
-
-
+<!-- FORM -->
 <div class="card">
 
-<h1>
+<input id="mle" placeholder="MLE">
+<input id="nom" placeholder="NOM">
+<input id="res" placeholder="N° DE RESERVATION">
 
-Reservation Gold
+<select id="type">
+<option>EXCURSION</option>
+<option>CONVENTION</option>
+</select>
 
-</h1>
+<input id="checkin" placeholder="CHECK IN">
+<input id="checkout" placeholder="CHECK OUT">
+<input id="prop" placeholder="PROPOSITION">
+<input id="etab" placeholder="ETABLISSEMENT">
+
+<select id="prise">
+<option>BAKOFFICE</option>
+<option>RECEPTION</option>
+<option>DIRECT</option>
+</select>
+
+<button onclick="addRes()">Ajouter</button>
+<button onclick="clearForm()">Annuler</button>
+<button onclick="downloadExcel()">Excel</button>
 
 </div>
 
-
-
-
-
+<!-- BULK -->
 <div class="card">
-
-
-<input id="m"
-
-placeholder="MLE">
-
-
-
-<input id="nom"
-
-placeholder="Nom">
-
-
-
-<input id="prenom"
-
-placeholder="Prénom">
-
-
-
-<input id="ent"
-
-placeholder="Ent_affect">
-
-
-
-<input id="lieu"
-
-placeholder="Lieu_affect">
-
-
-
-<input id="gsm"
-
-placeholder="GSM">
-
-
-
-<button class="gold"
-
-onclick="addRes()">
-
-Ajouter
-
-</button>
-
-
-
-<button class="blue"
-
-onclick="clearForm()">
-
-Annuler
-
-</button>
-
-
-
-<button class="gold"
-
-onclick="downloadExcel()">
-
-Excel
-
-</button>
-
-
-
+<textarea id="bulk" rows="6"
+placeholder="MLE|NOM|RES|TYPE|IN|OUT|PROP|ETAB|PRISE"></textarea>
+<button onclick="bulkImport()">Importer 2000+</button>
 </div>
 
-
-
-
+<!-- SEARCH -->
 <div class="card">
-
-
-<h3 style="color:#D4AF37">
-
-Coller 2000 Employés
-
-</h3>
-
-
-
-<textarea
-
-id="bulk"
-
-placeholder="MLE|nom|prenom|Ent_affect|Lieu_affect|GSM"></textarea>
-
-
-
-<button class="gold"
-
-onclick="pasteEmployees()">
-
-Importer
-
-</button>
-
-
-
+<input id="search" onkeyup="render()" placeholder="Recherche">
 </div>
 
-
-
-
-
+<!-- TABLE -->
 <div class="card">
-
-
-<input
-
-id="search"
-
-class="search"
-
-placeholder="Recherche..."
-
-onkeyup="searchTable()">
-
-
-
 <table>
-
-
 <thead>
-
 <tr>
-
 <th>#</th>
-
 <th>MLE</th>
-
-<th>Nom</th>
-
-<th>Prénom</th>
-
-<th>Ent_affect</th>
-
-<th>Lieu_affect</th>
-
-<th>GSM</th>
-
-<th>Action</th>
-
+<th>NOM</th>
+<th>RES</th>
+<th>TYPE</th>
+<th>IN</th>
+<th>OUT</th>
+<th>PROP</th>
+<th>ETAB</th>
+<th>PRISE</th>
+<th>ACTION</th>
 </tr>
-
-
 </thead>
-
-
-
-<tbody id="table">
-
-
-</tbody>
-
-
+<tbody id="t"></tbody>
 </table>
-
-
-
 </div>
+
+<script>
+
+let reservations = JSON.parse(localStorage.getItem("res") || "[]");
+
+/* SAVE */
+function save(){
+localStorage.setItem("res", JSON.stringify(reservations));
+}
+
+/* CLEAR */
+function clearForm(){
+mle.value="";
+nom.value="";
+res.value="";
+checkin.value="";
+checkout.value="";
+prop.value="";
+etab.value="";
+}
+
+/* ADD */
+function addRes(){
+
+reservations.push({
+m:mle.value,
+n:nom.value,
+r:res.value,
+t:type.value,
+ci:checkin.value,
+co:checkout.value,
+p:prop.value,
+e:etab.value,
+pr:prise.value
+});
+
+save();
+render();
+clearForm();
+}
+
+/* DELETE */
+function del(i){
+reservations.splice(i,1);
+save();
+render();
+}
+
+/* BULK IMPORT (2000+) */
+function bulkImport(){
+
+let lines = bulk.value.trim().split("\n");
+
+lines.forEach(l=>{
+
+let p = l.split("|");
+
+if(p.length>=9){
+
+reservations.push({
+m:p[0],n:p[1],r:p[2],t:p[3],
+ci:p[4],co:p[5],p:p[6],e:p[7],pr:p[8]
+});
+
+}
+
+});
+
+save();
+render();
+bulk.value="";
+
+}
+
+/* RENDER */
+function render(){
+
+let v = search.value?.toLowerCase() || "";
+t.innerHTML="";
+
+reservations.forEach((r,i)=>{
+
+let row = (Object.values(r).join(" ")).toLowerCase();
+
+if(row.includes(v)){
+
+t.innerHTML += `
+<tr>
+<td>${i+1}</td>
+<td>${r.m}</td>
+<td>${r.n}</td>
+<td>${r.r}</td>
+<td>${r.t}</td>
+<td>${r.ci}</td>
+<td>${r.co}</td>
+<td>${r.p}</td>
+<td>${r.e}</td>
+<td>${r.pr}</td>
+<td><button onclick="del(${i})">🗑</button></td>
+</tr>
+`;
+
+}
+
+});
+
+}
+
+/* EXCEL */
+function downloadExcel(){
+
+let ws = XLSX.utils.json_to_sheet(reservations.map((r,i)=>({
+"#":i+1,...r
+})));
+
+let wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Reservations");
+
+XLSX.writeFile(wb,"Reservations.xlsx");
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
