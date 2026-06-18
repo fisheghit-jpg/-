@@ -1,1 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>System RH</title>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#eaf2ff,#ffffff);
+color:#0f172a;
+}
+
+.card{
+margin:15px;
+padding:15px;
+background:#ffffff;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+h2{
+text-align:center;
+color:#1d4ed8;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin:6px 0;
+border-radius:8px;
+border:1px solid #cbd5e1;
+outline:none;
+}
+
+button{
+padding:10px 12px;
+margin:5px;
+background:#1d4ed8;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+button:hover{
+background:#2563eb;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+background:#1d4ed8;
+color:white;
+padding:10px;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #e5e7eb;
+}
+
+tr:hover{
+background:#f1f5f9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>GESTION RH</h2>
+</div>
+
+<!-- FORM -->
+<div class="card">
+<input id="mle" placeholder="MLE">
+<input id="nom" placeholder="NOM">
+<input id="prenom" placeholder="PRENOM">
+<input id="ent" placeholder="ENTITE">
+<input id="lieu" placeholder="LIEU">
+<input id="gsm" placeholder="GSM">
+
+<button onclick="add()">Ajouter</button>
+</div>
+
+<!-- BULK PASTE -->
+<div class="card">
+<h3>Coller plusieurs employés</h3>
+<textarea id="bulk" rows="6"
+placeholder="MLE|NOM|PRENOM|ENTITE|LIEU|GSM"></textarea>
+<button onclick="bulkAdd()">Importer (2000+)</button>
+</div>
+
+<!-- EXPORT -->
+<div class="card">
+<button onclick="exportExcel()">Export Excel</button>
+</div>
+
+<!-- TABLE -->
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>MLE</th>
+<th>NOM</th>
+<th>PRENOM</th>
+<th>ENTITE</th>
+<th>LIEU</th>
+<th>GSM</th>
+</tr>
+</thead>
+<tbody id="t"></tbody>
+</table>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("rh")||"[]");
+
+function save(){
+localStorage.setItem("rh",JSON.stringify(data));
+}
+
+function add(){
+
+data.push({
+mle:mle.value,
+nom:nom.value,
+prenom:prenom.value,
+ent:ent.value,
+lieu:lieu.value,
+gsm:gsm.value
+});
+
+save();
+render();
+}
+
+function bulkAdd(){
+
+let lines = bulk.value.trim().split("\n");
+
+lines.forEach(l=>{
+
+let p = l.split("|");
+
+if(p.length>=6){
+
+data.push({
+mle:p[0].trim(),
+nom:p[1].trim(),
+prenom:p[2].trim(),
+ent:p[3].trim(),
+lieu:p[4].trim(),
+gsm:p[5].trim()
+});
+
+}
+
+});
+
+save();
+render();
+bulk.value="";
+}
+
+function render(){
+
+t.innerHTML="";
+
+data.forEach((r,i)=>{
+
+t.innerHTML += `
+<tr>
+<td>${i+1}</td>
+<td>${r.mle}</td>
+<td>${r.nom}</td>
+<td>${r.prenom}</td>
+<td>${r.ent}</td>
+<td>${r.lieu}</td>
+<td>${r.gsm}</td>
+</tr>`;
+
+});
+
+}
+
+function exportExcel(){
+
+let ws = XLSX.utils.json_to_sheet(data);
+let wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"RH");
+XLSX.writeFile(wb,"employees.xlsx");
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
