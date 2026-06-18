@@ -1,428 +1,143 @@
 <script>
 
-/****************************************
-            CONFIG
-****************************************/
-
-const STORAGE = "reservations";
-
-let reservations = [];
-let editIndex = null;
+let reservations = JSON.parse(localStorage.getItem("res") || "[]");
+let editIndex = -1;
 
 
-/****************************************
-            ELEMENTS
-****************************************/
-
-const $ = id => document.getElementById(id);
-
-const table = $("table");
-const search = $("search");
-
-
-/****************************************
-            STORAGE
-****************************************/
-
-function loadData(){
-
-    reservations = JSON.parse(
-
-        localStorage.getItem(STORAGE)
-
-    ) || [];
-
+/* ===== SAVE ===== */
+function save(){
+localStorage.setItem("res", JSON.stringify(reservations));
 }
 
 
-function saveData(){
+/* ===== GET VALUES (FIXED) ===== */
+function getData(){
 
-    localStorage.setItem(
-
-        STORAGE,
-
-        JSON.stringify(reservations)
-
-    );
-
-}
-
-
-/****************************************
-            FORM
-****************************************/
-
-function formData(){
-
-return{
-
-m:$("m").value.trim(),
-
-nom:$("nom").value.trim(),
-
-num:$("num").value.trim(),
-
-etab:$("etab").value.trim(),
-
-periode:$("periode").value.trim(),
-
-status:$("status").value.trim()
-
+return {
+m: document.getElementById("m").value.trim(),
+nom: document.getElementById("nom").value.trim(),
+num: document.getElementById("num").value.trim(),
+etab: document.getElementById("etab").value.trim(),
+periode: document.getElementById("periode").value.trim(),
+status: document.getElementById("status").value.trim()
 };
 
 }
 
 
-
+/* ===== CLEAR ===== */
 function clearForm(){
 
-[
-"m",
-"nom",
-"num",
-"etab",
-"periode",
-"status"
+document.getElementById("m").value = "";
+document.getElementById("nom").value = "";
+document.getElementById("num").value = "";
+document.getElementById("etab").value = "";
+document.getElementById("periode").value = "";
+document.getElementById("status").value = "";
 
-]
-
-.forEach(id=>{
-
-$(id).value="";
-
-});
-
-
-editIndex=null;
+editIndex = -1;
 
 }
 
 
-
-/****************************************
-        ADD / UPDATE
-****************************************/
-
+/* ===== ADD (FIXED BUTTON) ===== */
 function addRes(){
 
+let data = getData();
 
-const data = formData();
-
-
-
-if(!data.nom){
-
-alert("NOM obligatoire");
-
+/* مهم جداً: تحقق */
+if(data.nom === "" && data.m === "") {
+alert("Remplir les champs !");
 return;
-
 }
 
 
-
-
-if(editIndex===null){
-
+/* إضافة */
+if(editIndex === -1){
 reservations.push(data);
-
+}else{
+reservations[editIndex] = data;
+editIndex = -1;
 }
 
-
-else{
-
-
-reservations[editIndex]=data;
-
-editIndex=null;
-
-
-}
-
-
-
-saveData();
-
+save();
 render();
-
 clearForm();
 
-
 }
 
 
-
-
-/****************************************
-            EDIT
-****************************************/
-
+/* ===== EDIT ===== */
 function startEdit(i){
 
+let r = reservations[i];
 
-const r = reservations[i];
+document.getElementById("m").value = r.m;
+document.getElementById("nom").value = r.nom;
+document.getElementById("num").value = r.num;
+document.getElementById("etab").value = r.etab;
+document.getElementById("periode").value = r.periode;
+document.getElementById("status").value = r.status;
 
-
-
-$("m").value=r.m;
-
-$("nom").value=r.nom;
-
-$("num").value=r.num;
-
-$("etab").value=r.etab;
-
-$("periode").value=r.periode;
-
-$("status").value=r.status;
-
-
-
-editIndex=i;
-
+editIndex = i;
 
 }
 
 
-
-
-
-/****************************************
-            DELETE
-****************************************/
-
+/* ===== DELETE ===== */
 function del(i){
 
-
-if(
-
-confirm(
-
-"Supprimer ?"
-
-)
-
-){
-
-
 reservations.splice(i,1);
-
-saveData();
-
+save();
 render();
 
 }
 
 
-
-}
-
-
-
-
-/****************************************
-            SEARCH
-****************************************/
-
-function searchTable(){
-
-const value=
-
-search.value.toLowerCase();
-
-
-
-document
-
-.querySelectorAll("#table tr")
-
-.forEach(row=>{
-
-
-row.style.display =
-
-
-row.innerText
-.toLowerCase()
-.includes(value)
-
-
-?
-
-""
-
-:
-
-"none";
-
-
-});
-
-
-}
-
-
-
-
-
-/****************************************
-            EXPORT
-****************************************/
-
-function downloadExcel(){
-
-
-let csv = "";
-
-
-csv += "#,MLE,NOM,N°,ETABLISSEMENT,PERIODE,STATUS\n";
-
-
-
-reservations.forEach((r,i)=>{
-
-
-csv +=
-
-
-`${i+1},
-${r.m},
-${r.nom},
-${r.num},
-${r.etab},
-${r.periode},
-${r.status}\n`;
-
-
-});
-
-
-
-const blob = new Blob(
-
-[csv],
-
-{
-
-type:"text/csv;charset=utf-8;"
-
-}
-
-);
-
-
-
-const url=
-
-URL.createObjectURL(blob);
-
-
-
-const link=
-
-document.createElement("a");
-
-
-link.href=url;
-
-link.download="Reservations.csv";
-
-
-document.body.appendChild(link);
-
-link.click();
-
-document.body.removeChild(link);
-
-
-URL.revokeObjectURL(url);
-
-
-
-}
-
-
-
-
-
-/****************************************
-            RENDER
-****************************************/
-
+/* ===== RENDER ===== */
 function render(){
 
-
-const tbody = $("table");
-
-tbody.innerHTML="";
-
-
+let table = document.getElementById("table");
+table.innerHTML = "";
 
 reservations.forEach((r,i)=>{
 
-
-const tr = document.createElement("tr");
-
-
-
-tr.innerHTML=`
-
+table.innerHTML += `
+<tr>
 <td>${i+1}</td>
-
 <td>${r.m}</td>
-
 <td>${r.nom}</td>
-
 <td>${r.num}</td>
-
 <td>${r.etab}</td>
-
 <td>${r.periode}</td>
-
 <td>${r.status}</td>
-
 <td>
-
-<button onclick="startEdit(${i})">
-
-✏️
-
-</button>
-
-
-<button
-
-onclick="del(${i})"
-
-style="background:#dc2626;color:white;">
-
-
-🗑️
-
-
-</button>
-
+<button onclick="startEdit(${i})">✏️</button>
+<button onclick="del(${i})" style="background:red;color:white;">🗑️</button>
 </td>
-
+</tr>
 `;
 
-
-
-tbody.appendChild(tr);
-
-
 });
-
 
 }
 
 
+/* ===== SEARCH ===== */
+function searchTable(){
 
-/****************************************
-            INIT
-****************************************/
+let v = document.getElementById("search").value.toLowerCase();
 
-loadData();
+document.querySelectorAll("#table tr").forEach(row=>{
+row.style.display = row.innerText.toLowerCase().includes(v) ? "" : "none";
+});
 
+}
+
+
+/* ===== INIT ===== */
+window.onload = function(){
 render();
+};
 
 </script>
