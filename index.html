@@ -37,6 +37,7 @@ color:black;
 border-radius:8px;
 cursor:pointer;
 margin-top:10px;
+margin-right:5px;
 }
 
 table{
@@ -81,8 +82,9 @@ color:#38bdf8;
 <h2>18 JUIN 2026</h2>
 </div>
 
+<!-- FORM -->
 <div class="card">
-<h3>Ajouter Réservation</h3>
+<h3>Ajouter / Modifier Réservation</h3>
 
 <input id="o" placeholder="O">
 <input id="m" placeholder="MLE">
@@ -92,13 +94,16 @@ color:#38bdf8;
 <input id="periode" placeholder="PERIODE">
 <input id="status" placeholder="STATUS">
 
-<button onclick="addRes()">Ajouter</button>
+<button onclick="addRes()">Ajouter / Sauvegarder</button>
+<button onclick="clearForm()">Annuler</button>
 </div>
 
+<!-- SEARCH -->
 <div class="card">
 <input id="search" placeholder="Recherche..." onkeyup="searchTable()">
 </div>
 
+<!-- TABLE -->
 <div class="card">
 <h3>Table Réservations</h3>
 
@@ -140,6 +145,7 @@ document.getElementById("num").value = "";
 document.getElementById("etab").value = "";
 document.getElementById("periode").value = "";
 document.getElementById("status").value = "";
+editIndex = -1;
 }
 
 /* ===== ADD OR EDIT ===== */
@@ -155,10 +161,13 @@ periode: document.getElementById("periode").value || "",
 status: document.getElementById("status").value || ""
 };
 
+/* EDIT MODE */
 if(editIndex !== -1){
 reservations[editIndex] = r;
 editIndex = -1;
-} else {
+} 
+/* ADD MODE */
+else {
 reservations.push(r);
 }
 
@@ -174,8 +183,9 @@ save();
 render();
 }
 
-/* ===== EDIT ===== */
+/* ===== EDIT BUTTON ===== */
 function startEdit(i){
+
 let r = reservations[i];
 
 document.getElementById("o").value = r.o;
@@ -207,8 +217,8 @@ t.innerHTML += `
 <td>${r.periode}</td>
 <td>${r.status}</td>
 <td>
-<button onclick="startEdit(${i})" style="background:orange;">Edit</button>
-<button onclick="del(${i})" style="background:red;color:white;">X</button>
+<button onclick="startEdit(${i})" style="background:orange;">✏️ Edit</button>
+<button onclick="del(${i})" style="background:red;color:white;">🗑 Delete</button>
 </td>
 </tr>
 `;
