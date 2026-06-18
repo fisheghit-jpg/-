@@ -1,27 +1,45 @@
 <script>
 
+/* ==========================
+   Configuration
+========================== */
+
 const STORAGE_KEY = "reservations";
-
 let reservations = [];
-let editIndex = null;
+let editIndex = -1;
 
 
-/*=========================
-تحميل البيانات
-=========================*/
-function loadData(){
+/* ==========================
+   Elements
+========================== */
+
+const table = document.getElementById("table");
+
+const m = document.getElementById("m");
+const nom = document.getElementById("nom");
+const num = document.getElementById("num");
+const etab = document.getElementById("etab");
+const periode = document.getElementById("periode");
+const status = document.getElementById("status");
+const search = document.getElementById("search");
+
+
+/* ==========================
+   LocalStorage
+========================== */
+
+function load(){
 
     reservations = JSON.parse(
+
         localStorage.getItem(STORAGE_KEY)
+
     ) || [];
 
 }
 
 
-/*=========================
-حفظ البيانات
-=========================*/
-function saveData(){
+function save(){
 
     localStorage.setItem(
 
@@ -34,30 +52,41 @@ function saveData(){
 }
 
 
-/*=========================
-قراءة الحقول
-=========================*/
-function getFormData(){
+
+/* ==========================
+   Form
+========================== */
+
+function clearForm(){
+
+    m.value="";
+    nom.value="";
+    num.value="";
+    etab.value="";
+    periode.value="";
+    status.value="";
+
+    editIndex=-1;
+
+}
+
+
+
+function getData(){
 
     return{
 
-        m:
-        document.getElementById("m").value.trim(),
+        m:m.value.trim(),
 
-        nom:
-        document.getElementById("nom").value.trim(),
+        nom:nom.value.trim(),
 
-        num:
-        document.getElementById("num").value.trim(),
+        num:num.value.trim(),
 
-        etab:
-        document.getElementById("etab").value.trim(),
+        etab:etab.value.trim(),
 
-        periode:
-        document.getElementById("periode").value.trim(),
+        periode:periode.value.trim(),
 
-        status:
-        document.getElementById("status").value.trim()
+        status:status.value.trim()
 
     };
 
@@ -65,206 +94,288 @@ function getFormData(){
 
 
 
-/*=========================
-تفريغ الحقول
-=========================*/
-function clearForm(){
+/* ==========================
+   Add
+========================== */
 
-document.getElementById("m").value="";
-document.getElementById("nom").value="";
-document.getElementById("num").value="";
-document.getElementById("etab").value="";
-document.getElementById("periode").value="";
-document.getElementById("status").value="";
-
-editIndex=null;
-
-}
-
-
-
-
-/*=========================
-إضافة / تعديل
-=========================*/
 function addRes(){
 
-const data=getFormData();
+    const data = getData();
 
 
-if(!data.nom){
+    if(data.nom===""){
 
-alert("Nom obligatoire");
+        alert("Entrer un NOM");
 
-return;
+        return;
 
-}
-
-
-
-if(editIndex===null){
-
-reservations.push(data);
-
-}
-
-else{
-
-reservations[editIndex]=data;
-
-editIndex=null;
-
-}
+    }
 
 
 
-saveData();
+    if(editIndex===-1){
 
-render();
+        reservations.push(data);
 
-clearForm();
+    }
 
-}
+    else{
 
+        reservations[editIndex]=data;
 
+        editIndex=-1;
 
-/*=========================
-تعديل
-=========================*/
-function startEdit(i){
-
-const r=reservations[i];
+    }
 
 
-document.getElementById("m").value=r.m;
-document.getElementById("nom").value=r.nom;
-document.getElementById("num").value=r.num;
-document.getElementById("etab").value=r.etab;
-document.getElementById("periode").value=r.periode;
-document.getElementById("status").value=r.status;
+    save();
 
+    render();
 
-editIndex=i;
+    clearForm();
 
 }
 
 
 
+/* ==========================
+   Edit
+========================== */
 
-/*=========================
-حذف
-=========================*/
-function del(i){
+function startEdit(index){
 
-if(confirm("Supprimer ?")){
+    const r = reservations[index];
 
 
-reservations.splice(i,1);
+    m.value=r.m;
+    nom.value=r.nom;
+    num.value=r.num;
+    etab.value=r.etab;
+    periode.value=r.periode;
+    status.value=r.status;
 
-saveData();
 
-render();
+    editIndex=index;
 
 }
 
 
+
+/* ==========================
+   Delete
+========================== */
+
+function del(index){
+
+    const ok = confirm(
+
+        "Supprimer cette réservation ?"
+
+    );
+
+
+    if(!ok) return;
+
+
+
+    reservations.splice(index,1);
+
+
+    save();
+
+    render();
+
 }
 
 
 
-/*=========================
-عرض الجدول
-=========================*/
+/* ==========================
+   Render
+========================== */
+
 function render(){
 
 
-const table=document.getElementById("table");
-
-table.innerHTML="";
+    table.innerHTML="";
 
 
-reservations.forEach((r,index)=>{
+    reservations.forEach((r,index)=>{
 
 
-table.innerHTML+=`
+        const row=`
 
-<tr>
+        <tr>
 
-<td>${index+1}</td>
+        <td>${index+1}</td>
 
-<td>${r.m}</td>
+        <td>${r.m}</td>
 
-<td>${r.nom}</td>
+        <td>${r.nom}</td>
 
-<td>${r.num}</td>
+        <td>${r.num}</td>
 
-<td>${r.etab}</td>
+        <td>${r.etab}</td>
 
-<td>${r.periode}</td>
+        <td>${r.periode}</td>
 
-<td>${r.status}</td>
+        <td>${r.status}</td>
 
-<td>
+        <td>
 
-<button onclick="startEdit(${index})">
+        <button
+        onclick="startEdit(${index})">
 
-✏️
+        ✏️
 
-</button>
-
-
-<button onclick="del(${index})">
-
-🗑️
-
-</button>
-
-</td>
-
-</tr>
-
-`;
+        </button>
 
 
-});
+        <button
+
+        onclick="del(${index})"
+
+        style="background:red;color:white;">
+
+        🗑️
+
+        </button>
+
+        </td>
+
+        </tr>
+
+        `;
+
+
+        table.innerHTML += row;
+
+
+    });
 
 
 }
 
 
 
+/* ==========================
+   Search
+========================== */
 
-
-/*=========================
-بحث
-=========================*/
 function searchTable(){
 
-const text=
-document.getElementById("search")
-.value
-.toLowerCase();
+
+    const value =
+
+    search.value.toLowerCase();
 
 
-const rows=
-document.querySelectorAll("#table tr");
+
+    const rows =
+
+    document.querySelectorAll(
+
+        "#table tr"
+
+    );
 
 
-rows.forEach(row=>{
 
-row.style.display=
+    rows.forEach(row=>{
 
-row.innerText
-.toLowerCase()
-.includes(text)
 
-? ""
+        row.style.display =
 
-:
 
-"none";
+        row.innerText
+        .toLowerCase()
+        .includes(value)
+
+
+        ? ""
+
+        : "none";
+
+
+    });
+
+
+}
+
+
+
+/* ==========================
+   Export CSV
+========================== */
+
+function downloadExcel(){
+
+
+let csv="";
+
+
+csv += "#,MLE,NOM,N°,ETABLISSEMENT,PERIODE,STATUS\n";
+
+
+reservations.forEach((r,i)=>{
+
+
+csv +=
+
+`${i+1},
+
+${r.m},
+
+${r.nom},
+
+${r.num},
+
+${r.etab},
+
+${r.periode},
+
+${r.status}\n`;
+
 
 });
+
+
+
+const blob = new Blob(
+
+[csv],
+
+{
+
+type:"text/csv"
+
+}
+
+);
+
+
+
+const url=
+
+URL.createObjectURL(blob);
+
+
+
+const a=
+
+document.createElement("a");
+
+
+a.href=url;
+
+
+a.download="Reservations.csv";
+
+
+a.click();
+
+
+
+URL.revokeObjectURL(url);
 
 
 }
@@ -272,13 +383,12 @@ row.innerText
 
 
 
-/*=========================
-تشغيل النظام
-=========================*/
+/* ==========================
+   Init
+========================== */
 
-loadData();
+load();
 
 render();
-
 
 </script>
