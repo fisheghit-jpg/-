@@ -2,40 +2,32 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Smart Reservation System</title>
+<title>System RH</title>
 
-<!-- Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-
-/* ====== BLUE & WHITE THEME ====== */
 body{
 margin:0;
 font-family:Segoe UI;
-background:#eef4ff;
-color:#1e293b;
-}
-
-.header{
-text-align:center;
-padding:18px;
-background:#1e3a8a;
-color:white;
-font-size:20px;
-font-weight:bold;
+background:linear-gradient(135deg,#eaf2ff,#ffffff);
+color:#0f172a;
 }
 
 .card{
 margin:15px;
 padding:15px;
-background:white;
+background:#ffffff;
 border-radius:12px;
 box-shadow:0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* inputs */
-input, textarea, select{
+h2{
+text-align:center;
+color:#1d4ed8;
+}
+
+input,textarea{
 width:100%;
 padding:10px;
 margin:6px 0;
@@ -44,80 +36,76 @@ border:1px solid #cbd5e1;
 outline:none;
 }
 
-input:focus, textarea:focus{
-border-color:#2563eb;
-box-shadow:0 0 5px #93c5fd;
-}
-
-/* buttons */
 button{
 padding:10px 12px;
 margin:5px;
+background:#1d4ed8;
+color:white;
 border:none;
 border-radius:8px;
 cursor:pointer;
-background:#2563eb;
-color:white;
-font-weight:bold;
 }
 
 button:hover{
-background:#1d4ed8;
+background:#2563eb;
 }
 
-/* table */
 table{
 width:100%;
 border-collapse:collapse;
-background:white;
+margin-top:10px;
 }
 
 th{
-background:#1e3a8a;
+background:#1d4ed8;
 color:white;
 padding:10px;
-font-size:12px;
 }
 
 td{
-padding:10px;
+padding:8px;
 border-bottom:1px solid #e5e7eb;
-font-size:12px;
 }
 
 tr:hover{
-background:#f1f5ff;
+background:#f1f5f9;
 }
-
 </style>
 </head>
 
 <body>
 
-<div class="header">
-SMART COLLABORATEUR MANAGEMENT SYSTEM
+<div class="card">
+<h2>GESTION RH</h2>
 </div>
 
 <!-- FORM -->
 <div class="card">
+<input id="mle" placeholder="MLE">
+<input id="nom" placeholder="NOM">
+<input id="prenom" placeholder="PRENOM">
+<input id="ent" placeholder="ENTITE">
+<input id="lieu" placeholder="LIEU">
+<input id="gsm" placeholder="GSM">
 
-<h3>Ajout collaborateur</h3>
-
-<input id="data" placeholder="COLLAGE ICI (Excel COPY PASTE)">
-
-<button onclick="bulkAdd()">➕ Ajouter (Collage multiple)</button>
-<button onclick="exportExcel()">📥 Export Excel</button>
-
+<button onclick="add()">Ajouter</button>
 </div>
 
-<!-- SEARCH -->
+<!-- BULK PASTE -->
 <div class="card">
-<input id="search" onkeyup="render()" placeholder="Recherche...">
+<h3>Coller plusieurs employés</h3>
+<textarea id="bulk" rows="6"
+placeholder="MLE|NOM|PRENOM|ENTITE|LIEU|GSM"></textarea>
+<button onclick="bulkAdd()">Importer (2000+)</button>
+</div>
+
+<!-- EXPORT -->
+<div class="card">
+<button onclick="exportExcel()">Export Excel</button>
 </div>
 
 <!-- TABLE -->
 <div class="card">
-
 <table>
 <thead>
 <tr>
@@ -125,57 +113,55 @@ SMART COLLABORATEUR MANAGEMENT SYSTEM
 <th>MLE</th>
 <th>NOM</th>
 <th>PRENOM</th>
-<th>GSM</th>
 <th>ENTITE</th>
 <th>LIEU</th>
-<th>ACTIONS</th>
+<th>GSM</th>
 </tr>
 </thead>
-
 <tbody id="t"></tbody>
 </table>
-
 </div>
 
 <script>
 
-/* ===== DATA ===== */
-let dataList = JSON.parse(localStorage.getItem("collab") || "[]");
+let data = JSON.parse(localStorage.getItem("rh")||"[]");
 
-/* ===== SAVE ===== */
 function save(){
-localStorage.setItem("collab", JSON.stringify(dataList));
+localStorage.setItem("rh",JSON.stringify(data));
 }
 
-/* ===== BULK ADD (IMPORTANT) ===== */
+function add(){
+
+data.push({
+mle:mle.value,
+nom:nom.value,
+prenom:prenom.value,
+ent:ent.value,
+lieu:lieu.value,
+gsm:gsm.value
+});
+
+save();
+render();
+}
+
 function bulkAdd(){
 
-let text = document.getElementById("data").value.trim();
+let lines = bulk.value.trim().split("\n");
 
-if(!text){
-alert("Collez les données");
-return;
-}
+lines.forEach(l=>{
 
-let lines = text.split("\n");
+let p = l.split("|");
 
-lines.forEach(line=>{
+if(p.length>=6){
 
-line = line.trim();
-if(!line) return;
-
-/* Excel copy paste support (TAB or |) */
-let p = line.includes("\t") ? line.split("\t") : line.split("|");
-
-if(p.length >= 6){
-
-dataList.push({
-m:p[0]?.trim(),
-nom:p[1]?.trim(),
-prenom:p[2]?.trim(),
-gsm:p[3]?.trim(),
-entite:p[4]?.trim(),
-lieu:p[5]?.trim()
+data.push({
+mle:p[0].trim(),
+nom:p[1].trim(),
+prenom:p[2].trim(),
+ent:p[3].trim(),
+lieu:p[4].trim(),
+gsm:p[5].trim()
 });
 
 }
@@ -184,78 +170,37 @@ lieu:p[5]?.trim()
 
 save();
 render();
-
-document.getElementById("data").value="";
-
+bulk.value="";
 }
 
-/* ===== RENDER ===== */
 function render(){
 
-let v = document.getElementById("search").value.toLowerCase();
-
-let t = document.getElementById("t");
 t.innerHTML="";
 
-dataList.forEach((r,i)=>{
-
-let row = (r.m+" "+r.nom+" "+r.prenom+" "+r.gsm+" "+r.entite+" "+r.lieu).toLowerCase();
-
-if(row.includes(v)){
+data.forEach((r,i)=>{
 
 t.innerHTML += `
 <tr>
 <td>${i+1}</td>
-<td>${r.m}</td>
+<td>${r.mle}</td>
 <td>${r.nom}</td>
 <td>${r.prenom}</td>
-<td>${r.gsm}</td>
-<td>${r.entite}</td>
+<td>${r.ent}</td>
 <td>${r.lieu}</td>
-<td><button onclick="del(${i})">🗑</button></td>
-</tr>
-`;
-
-}
+<td>${r.gsm}</td>
+</tr>`;
 
 });
 
 }
 
-/* ===== DELETE ===== */
-function del(i){
-dataList.splice(i,1);
-save();
-render();
-}
-
-/* ===== EXPORT EXCEL (REAL .XLSX) ===== */
 function exportExcel(){
 
-let ws = XLSX.utils.json_to_sheet(dataList.map((r,i)=>({
-"#":i+1,
-"MLE":r.m,
-"NOM":r.nom,
-"PRENOM":r.prenom,
-"GSM":r.gsm,
-"ENTITE":r.entite,
-"LIEU":r.lieu
-})));
-
-ws["!cols"] = [
-{wch:5},
-{wch:10},
-{wch:15},
-{wch:15},
-{wch:15},
-{wch:20},
-{wch:20}
-];
-
+let ws = XLSX.utils.json_to_sheet(data);
 let wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, "Collaborateurs");
+XLSX.utils.book_append_sheet(wb,ws,"RH");
+XLSX.writeFile(wb,"employees.xlsx");
 
-XLSX.writeFile(wb, "Collaborateurs.xlsx");
 }
 
 render();
