@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>System Pro</title>
+<title>Reservation System Pro</title>
 
 <style>
 body{
@@ -54,163 +54,172 @@ white-space:nowrap;
 tr:hover{
 background:#1e293b;
 }
+
+#todayDate{
+text-align:center;
+font-size:22px;
+color:#38bdf8;
+}
 </style>
 </head>
 
 <body>
 
-<!-- EMPLOYEES -->
+<!-- DATE -->
 <div class="card">
-<h3>Ajouter Employé</h3>
-
-<input id="matricule" placeholder="Matricule">
-<input id="nom" placeholder="Nom">
-<input id="prenom" placeholder="Prénom">
-
-<button onclick="addEmployee()">Ajouter</button>
+<h2 id="todayDate"></h2>
 </div>
 
+<!-- ADD RESERVATION -->
 <div class="card">
-<h3>Employés</h3>
-<table>
-<tbody id="empTable"></tbody>
-</table>
+<h3>Ajouter Réservation</h3>
+
+<input id="o" placeholder="O">
+<input id="m" placeholder="MLE">
+<input id="nom" placeholder="NOM">
+<input id="num" placeholder="N°">
+<input id="etab" placeholder="ETABLISSEMENT">
+<input id="periode" placeholder="PERIODE DE RESERVATION">
+<input id="status" placeholder="AUJOURD'HUI (STATUS)">
+
+<button onclick="addRes()">Ajouter</button>
+<button onclick="exportCSV()">Export Excel</button>
 </div>
 
-<!-- RESERVATIONS -->
+<!-- SEARCH -->
 <div class="card">
-<h3>Réservation</h3>
-
-<input id="rPeriode" placeholder="Période">
-<input id="rNom" placeholder="Nom">
-<input id="rMatricule" placeholder="Matricule">
-<input id="rEtablissement" placeholder="Établissement">
-<input id="rElement1" placeholder="Élément de réponse 1">
-<input id="rComplement" placeholder="Complément de réponse">
-
-<button onclick="addRes()">Ajouter Réservation</button>
+<input id="search" placeholder="Recherche..." onkeyup="searchTable()">
 </div>
 
+<!-- TABLE -->
 <div class="card">
 <h3>Table Réservations</h3>
 
 <table>
 <thead>
 <tr>
-<th>PÉRIODE</th>
+<th>O</th>
+<th>MLE</th>
 <th>NOM</th>
-<th>MATRICULE</th>
+<th>N°</th>
 <th>ETABLISSEMENT</th>
-<th>ELEMENT DE REPONSE 1</th>
-<th>COMPLEMENT DE REPONSE</th>
+<th>PERIODE</th>
+<th>AUJOURD'HUI</th>
+<th>DELETE</th>
 </tr>
 </thead>
 
-<tbody id="resTable"></tbody>
+<tbody id="table"></tbody>
 </table>
-
-<br>
-<button onclick="sendGmail()">📧 Send Gmail</button>
 </div>
 
 <script>
 
 /* ===== DATA ===== */
-let employees = JSON.parse(localStorage.getItem("emp")) || [];
 let reservations = JSON.parse(localStorage.getItem("res")) || [];
 
 /* ===== SAVE ===== */
 function save(){
-localStorage.setItem("emp", JSON.stringify(employees));
 localStorage.setItem("res", JSON.stringify(reservations));
 }
 
-/* ===== EMPLOYEE ===== */
-function addEmployee(){
-let m=document.getElementById("matricule").value;
-let n=document.getElementById("nom").value;
-let p=document.getElementById("prenom").value;
-
-employees.push({m,n,p});
-save();
-renderEmp();
+/* ===== DATE AUTO ===== */
+function setDate(){
+let d=new Date();
+let months=[
+"JANVIER","FÉVRIER","MARS","AVRIL","MAI","JUIN",
+"JUILLET","AOÛT","SEPTEMBRE","OCTOBRE","NOVEMBRE","DÉCEMBRE"
+];
+document.getElementById("todayDate").innerText =
+`${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
+setDate();
 
-function renderEmp(){
-let t=document.getElementById("empTable");
-t.innerHTML="";
-
-employees.forEach(e=>{
-t.innerHTML+=`
-<tr>
-<td>${e.m}</td>
-<td>${e.n}</td>
-<td>${e.p}</td>
-</tr>
-`;
-});
-}
-
-/* ===== RESERVATION ===== */
+/* ===== ADD ===== */
 function addRes(){
 
-let rPeriode=document.getElementById("rPeriode").value;
-let rNom=document.getElementById("rNom").value;
-let rMatricule=document.getElementById("rMatricule").value;
-let rEtablissement=document.getElementById("rEtablissement").value;
-let rElement1=document.getElementById("rElement1").value;
-let rComplement=document.getElementById("rComplement").value;
+let data={
+o:document.getElementById("o").value,
+m:document.getElementById("m").value,
+nom:document.getElementById("nom").value,
+num:document.getElementById("num").value,
+etab:document.getElementById("etab").value,
+periode:document.getElementById("periode").value,
+status:document.getElementById("status").value
+};
 
-reservations.push({
-rPeriode,
-rNom,
-rMatricule,
-rEtablissement,
-rElement1,
-rComplement
-});
-
+reservations.push(data);
 save();
-renderRes();
+render();
 }
 
-function renderRes(){
-let t=document.getElementById("resTable");
+/* ===== COLOR STATUS ===== */
+function getColor(s){
+s=s.toLowerCase();
+
+if(s.includes("prise")) return "#22c55e";
+if(s.includes("attente")) return "#facc15";
+if(s.includes("refus")) return "#ef4444";
+if(s.includes("urgent")) return "#f97316";
+
+return "white";
+}
+
+/* ===== DELETE ===== */
+function del(i){
+reservations.splice(i,1);
+save();
+render();
+}
+
+/* ===== RENDER ===== */
+function render(){
+
+let t=document.getElementById("table");
 t.innerHTML="";
 
-reservations.forEach(r=>{
+reservations.forEach((r,i)=>{
 t.innerHTML+=`
 <tr>
-<td>${r.rPeriode}</td>
-<td>${r.rNom}</td>
-<td>${r.rMatricule}</td>
-<td>${r.rEtablissement}</td>
-<td>${r.rElement1}</td>
-<td>${r.rComplement}</td>
+<td>${r.o}</td>
+<td>${r.m}</td>
+<td>${r.nom}</td>
+<td>${r.num}</td>
+<td>${r.etab}</td>
+<td>${r.periode}</td>
+<td style="color:${getColor(r.status)}">${r.status}</td>
+<td><button onclick="del(${i})">🗑</button></td>
 </tr>
 `;
 });
 }
+render();
 
-/* ===== GMAIL ===== */
-function sendGmail(){
+/* ===== SEARCH ===== */
+function searchTable(){
+let value=document.getElementById("search").value.toLowerCase();
+let rows=document.querySelectorAll("#table tr");
 
-let text="Reservations:\n\n";
-
-reservations.forEach(r=>{
-text+=`${r.rPeriode} - ${r.rNom} - ${r.rMatricule} - ${r.rEtablissement} - ${r.rElement1} - ${r.rComplement}\n`;
+rows.forEach(r=>{
+r.style.display=r.innerText.toLowerCase().includes(value)?"":"none";
 });
-
-let subject="Reservations Report";
-
-window.open(
-`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${encodeURIComponent(text)}`
-);
 }
 
-/* INIT */
-renderEmp();
-renderRes();
+/* ===== EXPORT CSV ===== */
+function exportCSV(){
+
+let csv="O,MLE,NOM,N°,ETABLISSEMENT,PERIODE,STATUS\n";
+
+reservations.forEach(r=>{
+csv+=`${r.o},${r.m},${r.nom},${r.num},${r.etab},${r.periode},${r.status}\n`;
+});
+
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="reservations.csv";
+a.click();
+}
 
 </script>
 
