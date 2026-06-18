@@ -2,21 +2,32 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation System FIX</title>
+<title>Future Reservation XLSX</title>
+
+<!-- XLSX LIBRARY -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
 margin:0;
 font-family:Segoe UI;
-background:#0f172a;
+background:#0b1220;
 color:white;
 }
 
+.header{
+text-align:center;
+padding:20px;
+color:#f5d36c;
+font-size:22px;
+}
+
 .card{
-background:#111827;
 margin:15px;
 padding:15px;
-border-radius:10px;
+background:#111827;
+border-radius:12px;
+border:1px solid #f5d36c33;
 }
 
 input{
@@ -25,7 +36,7 @@ padding:10px;
 margin:5px 0;
 border-radius:8px;
 border:none;
-background:#1e293b;
+background:#0b1220;
 color:white;
 }
 
@@ -35,7 +46,7 @@ margin:5px;
 border:none;
 border-radius:8px;
 cursor:pointer;
-background:#d4af37;
+background:#f5d36c;
 color:#0b1220;
 font-weight:bold;
 }
@@ -46,22 +57,24 @@ border-collapse:collapse;
 margin-top:10px;
 }
 
-td,th{
+th,td{
 padding:10px;
-border-bottom:1px solid #1e293b;
+border-bottom:1px solid #222;
 }
 
 th{
-color:#d4af37;
+color:#f5d36c;
+}
+
+tr:hover{
+background:#1e293b;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-<h2 style="text-align:center;color:#d4af37;">Reservation System</h2>
-</div>
+<div class="header">RESERVATION SYSTEM 3029</div>
 
 <div class="card">
 <input id="m" placeholder="MLE">
@@ -73,6 +86,7 @@ color:#d4af37;
 
 <button onclick="addRes()">Ajouter</button>
 <button onclick="clearForm()">Annuler</button>
+<button onclick="downloadExcel()">📥 Excel</button>
 </div>
 
 <div class="card">
@@ -87,30 +101,33 @@ color:#d4af37;
 <th>MLE</th>
 <th>NOM</th>
 <th>N°</th>
-<th>ETABLISSEMENT</th>
+<th>ETAB</th>
 <th>PERIODE</th>
 <th>STATUS</th>
 <th>ACTIONS</th>
 </tr>
 </thead>
-
 <tbody id="table"></tbody>
 </table>
 </div>
 
 <script>
 
-let reservations = [];
+let reservations = JSON.parse(localStorage.getItem("res") || "[]");
 let editIndex = -1;
+
+function save(){
+localStorage.setItem("res", JSON.stringify(reservations));
+}
 
 function getData(){
 return {
-m: document.getElementById("m").value,
-nom: document.getElementById("nom").value,
-num: document.getElementById("num").value,
-etab: document.getElementById("etab").value,
-periode: document.getElementById("periode").value,
-status: document.getElementById("status").value
+m: document.getElementById("m").value.trim(),
+nom: document.getElementById("nom").value.trim(),
+num: document.getElementById("num").value.trim(),
+etab: document.getElementById("etab").value.trim(),
+periode: document.getElementById("periode").value.trim(),
+status: document.getElementById("status").value.trim()
 };
 }
 
@@ -121,39 +138,57 @@ document.getElementById("num").value="";
 document.getElementById("etab").value="";
 document.getElementById("periode").value="";
 document.getElementById("status").value="";
+editIndex=-1;
 }
 
 function addRes(){
 
-let d = getData();
+let d=getData();
 
-if(d.nom === ""){
-alert("Nom obligatoire");
+if(d.nom===""){
+alert("NOM obligatoire");
 return;
 }
 
+if(editIndex===-1){
 reservations.push(d);
+}else{
+reservations[editIndex]=d;
+editIndex=-1;
+}
 
-clearForm();
+save();
 render();
+clearForm();
+}
 
+function startEdit(i){
+
+let r=reservations[i];
+
+document.getElementById("m").value=r.m;
+document.getElementById("nom").value=r.nom;
+document.getElementById("num").value=r.num;
+document.getElementById("etab").value=r.etab;
+document.getElementById("periode").value=r.periode;
+document.getElementById("status").value=r.status;
+
+editIndex=i;
 }
 
 function del(i){
 reservations.splice(i,1);
+save();
 render();
 }
 
 function render(){
 
-let t = document.getElementById("table");
+let t=document.getElementById("table");
 t.innerHTML="";
 
-for(let i=0;i<reservations.length;i++){
-
-let r = reservations[i];
-
-t.innerHTML += `
+reservations.forEach((r,i)=>{
+t.innerHTML+=`
 <tr>
 <td>${i+1}</td>
 <td>${r.m}</td>
@@ -163,23 +198,53 @@ t.innerHTML += `
 <td>${r.periode}</td>
 <td>${r.status}</td>
 <td>
-<button onclick="del(${i})" style="background:red;color:white;">Delete</button>
+<button onclick="startEdit(${i})">✏</button>
+<button onclick="del(${i})" style="background:red;color:white;">🗑</button>
 </td>
-</tr>
-`;
-
-}
+</tr>`;
+});
 
 }
 
 function searchTable(){
 
-let v = document.getElementById("search").value.toLowerCase();
+let v=document.getElementById("search").value.toLowerCase();
 
 document.querySelectorAll("#table tr").forEach(r=>{
-r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none";
+r.style.display=r.innerText.toLowerCase().includes(v)?"":"none";
 });
 
+}
+
+/* ===== EXCEL EXPORT ===== */
+function downloadExcel(){
+
+let data = reservations.map((r,i)=>({
+"#": i+1,
+"MLE": r.m,
+"NOM": r.nom,
+"N°": r.num,
+"ETABLISSEMENT": r.etab,
+"PERIODE": r.periode,
+"STATUS": r.status
+}));
+
+let ws = XLSX.utils.json_to_sheet(data);
+
+ws["!cols"] = [
+{wch:5},
+{wch:10},
+{wch:15},
+{wch:10},
+{wch:20},
+{wch:15},
+{wch:10}
+];
+
+let wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Reservations");
+
+XLSX.writeFile(wb, "Reservations.xlsx");
 }
 
 render();
