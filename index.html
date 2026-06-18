@@ -77,12 +77,10 @@ color:#38bdf8;
 
 <body>
 
-<!-- TITLE -->
 <div class="card">
 <h2>18 JUIN 2026</h2>
 </div>
 
-<!-- FORM -->
 <div class="card">
 <h3>Ajouter Réservation</h3>
 
@@ -95,15 +93,12 @@ color:#38bdf8;
 <input id="status" placeholder="STATUS">
 
 <button onclick="addRes()">Ajouter</button>
-<button onclick="openTable()">Ouvrir Tableau</button>
 </div>
 
-<!-- SEARCH -->
 <div class="card">
 <input id="search" placeholder="Recherche..." onkeyup="searchTable()">
 </div>
 
-<!-- TABLE -->
 <div class="card">
 <h3>Table Réservations</h3>
 
@@ -117,7 +112,7 @@ color:#38bdf8;
 <th>ETABLISSEMENT</th>
 <th>PERIODE</th>
 <th>STATUS</th>
-<th>DELETE</th>
+<th>ACTIONS</th>
 </tr>
 </thead>
 
@@ -127,15 +122,27 @@ color:#38bdf8;
 
 <script>
 
-/* ===== DATA SAFE ===== */
+/* ===== DATA ===== */
 let reservations = JSON.parse(localStorage.getItem("res") || "[]");
+let editIndex = -1;
 
 /* ===== SAVE ===== */
 function save(){
 localStorage.setItem("res", JSON.stringify(reservations));
 }
 
-/* ===== ADD (NO UNDEFINED FIXED) ===== */
+/* ===== CLEAR FORM ===== */
+function clearForm(){
+document.getElementById("o").value = "";
+document.getElementById("m").value = "";
+document.getElementById("nom").value = "";
+document.getElementById("num").value = "";
+document.getElementById("etab").value = "";
+document.getElementById("periode").value = "";
+document.getElementById("status").value = "";
+}
+
+/* ===== ADD OR EDIT ===== */
 function addRes(){
 
 let r = {
@@ -148,9 +155,16 @@ periode: document.getElementById("periode").value || "",
 status: document.getElementById("status").value || ""
 };
 
+if(editIndex !== -1){
+reservations[editIndex] = r;
+editIndex = -1;
+} else {
 reservations.push(r);
+}
+
 save();
 render();
+clearForm();
 }
 
 /* ===== DELETE ===== */
@@ -160,7 +174,22 @@ save();
 render();
 }
 
-/* ===== RENDER (SAFE) ===== */
+/* ===== EDIT ===== */
+function startEdit(i){
+let r = reservations[i];
+
+document.getElementById("o").value = r.o;
+document.getElementById("m").value = r.m;
+document.getElementById("nom").value = r.nom;
+document.getElementById("num").value = r.num;
+document.getElementById("etab").value = r.etab;
+document.getElementById("periode").value = r.periode;
+document.getElementById("status").value = r.status;
+
+editIndex = i;
+}
+
+/* ===== RENDER ===== */
 function render(){
 
 let t = document.getElementById("table");
@@ -170,14 +199,17 @@ reservations.forEach((r,i)=>{
 
 t.innerHTML += `
 <tr>
-<td>${r.o || ""}</td>
-<td>${r.m || ""}</td>
-<td>${r.nom || ""}</td>
-<td>${r.num || ""}</td>
-<td>${r.etab || ""}</td>
-<td>${r.periode || ""}</td>
-<td>${r.status || ""}</td>
-<td><button onclick="del(${i})" style="background:red;color:white;">X</button></td>
+<td>${r.o}</td>
+<td>${r.m}</td>
+<td>${r.nom}</td>
+<td>${r.num}</td>
+<td>${r.etab}</td>
+<td>${r.periode}</td>
+<td>${r.status}</td>
+<td>
+<button onclick="startEdit(${i})" style="background:orange;">Edit</button>
+<button onclick="del(${i})" style="background:red;color:white;">X</button>
+</td>
 </tr>
 `;
 });
@@ -193,96 +225,6 @@ let rows = document.querySelectorAll("#table tr");
 rows.forEach(r=>{
 r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none";
 });
-}
-
-/* ===== OPEN CLEAN WINDOW TABLE ===== */
-function openTable(){
-
-let w = window.open("", "_blank");
-
-let html = `
-<html>
-<head>
-<title>TABLE</title>
-<style>
-body{
-font-family:Segoe UI;
-background:#0f172a;
-color:white;
-padding:20px;
-}
-
-h2{
-text-align:center;
-color:#38bdf8;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-background:#0b1220;
-}
-
-th{
-background:#1e293b;
-color:#38bdf8;
-padding:10px;
-}
-
-td{
-padding:10px;
-border-bottom:1px solid #1e293b;
-}
-
-tr:nth-child(even){
-background:#0f172a;
-}
-
-tr:hover{
-background:#1e293b;
-}
-</style>
-</head>
-
-<body>
-
-<h2>TABLE RESERVATIONS</h2>
-
-<table>
-<tr>
-<th>O</th>
-<th>MLE</th>
-<th>NOM</th>
-<th>N°</th>
-<th>ETABLISSEMENT</th>
-<th>PERIODE</th>
-<th>STATUS</th>
-</tr>
-`;
-
-reservations.forEach(r=>{
-html += `
-<tr>
-<td>${r.o || ""}</td>
-<td>${r.m || ""}</td>
-<td>${r.nom || ""}</td>
-<td>${r.num || ""}</td>
-<td>${r.etab || ""}</td>
-<td>${r.periode || ""}</td>
-<td>${r.status || ""}</td>
-</tr>
-`;
-});
-
-html += `
-</table>
-
-</body>
-</html>
-`;
-
-w.document.write(html);
-w.document.close();
 }
 
 </script>
