@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation Blue System</title>
+<title>Reservation Pro System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -10,80 +10,98 @@
 body{
 margin:0;
 font-family:Segoe UI;
-background:linear-gradient(135deg,#0b1b3a,#071022);
-color:#e5f2ff;
+background:#eaf2ff;
+color:#0f172a;
 }
 
 /* HEADER */
-h2{
+.header{
+background:#1e3a8a;
+color:white;
+padding:15px;
 text-align:center;
-color:#6ec1ff;
-padding:10px;
+font-size:20px;
+font-weight:bold;
 }
 
-/* CARD */
+/* CONTAINER */
 .card{
-margin:15px;
-padding:15px;
-background:rgba(255,255,255,0.04);
-border-radius:12px;
-border:1px solid rgba(110,193,255,0.2);
+background:white;
+margin:12px;
+padding:12px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
 
 /* INPUT */
 input,select,textarea{
 width:100%;
 padding:10px;
-margin:6px 0;
+margin:5px 0;
 border-radius:8px;
-border:none;
-background:#0a1a33;
-color:white;
+border:1px solid #cbd5e1;
+outline:none;
+}
+
+input:focus,select:focus,textarea:focus{
+border-color:#2563eb;
 }
 
 /* BUTTON */
 button{
 padding:10px 12px;
 margin:5px;
-background:#4db6ff;
 border:none;
 border-radius:8px;
 cursor:pointer;
+background:#2563eb;
+color:white;
 font-weight:bold;
-color:#00152a;
 }
-button:hover{opacity:0.85}
+
+button:hover{
+background:#1d4ed8;
+}
 
 /* TABLE */
 table{
 width:100%;
 border-collapse:collapse;
+font-size:13px;
 }
 
 th{
-background:#0d2a4a;
-color:#6ec1ff;
-padding:10px;
+background:#1e3a8a;
+color:white;
+padding:8px;
+position:sticky;
+top:0;
 }
 
 td{
 padding:8px;
-border-bottom:1px solid #123;
+border-bottom:1px solid #e5e7eb;
 }
 
-tr:hover{
-background:#0d1f3a;
+tr:nth-child(even){
+background:#f8fafc;
 }
 
-/* STATUS COLORS */
-.green{color:#00ff99;font-weight:bold}
-.red{color:#ff5c5c;font-weight:bold}
+.status-ok{
+background:#dcfce7 !important;
+}
+
+.status-wait{
+background:#fee2e2 !important;
+}
 </style>
 </head>
 
 <body>
 
-<h2>SMART RESERVATION SYSTEM</h2>
+<div class="header">
+SYSTEME RESERVATION BLUE & WHITE
+</div>
 
 <div class="card">
 
@@ -92,16 +110,20 @@ background:#0d1f3a;
 <input id="prenom" placeholder="PRENOM">
 <input id="gsm" placeholder="GSM">
 <input id="entite" placeholder="ENTITE">
-<input id="lieu" placeholder="LIEU D'AFFECTATION">
-<input id="date" placeholder="DATE DEMANDE">
-<input id="num" placeholder="N° RESERVATION">
+<input id="lieu" placeholder="LIEU AFFECTATION">
+<input id="date_demande" type="date">
 
-<select id="type">
+<input id="num_res" placeholder="N° RESERVATION">
+
+<select id="type_res">
 <option>EXCURSION</option>
 <option>CONVENTION</option>
 </select>
 
-<select id="prise">
+<input id="checkin" type="date">
+<input id="checkout" type="date">
+
+<select id="prise_charge">
 <option>BATAH</option>
 <option>RADI</option>
 <option>ANASS</option>
@@ -112,42 +134,29 @@ background:#0d1f3a;
 <option>AUTRE</option>
 </select>
 
-<select id="etab">
-<option>ETABLISSEMENT 1</option>
-<option>ETABLISSEMENT 2</option>
-<option>ETABLISSEMENT 3</option>
-</select>
-
 <select id="statut">
-<option value="EN COURS">EN COURS</option>
-<option value="CLOTURE">CLOTURE</option>
+<option value="ENC">EN COURS</option>
+<option value="CLT">CLOTURE</option>
 </select>
 
-<button onclick="add()">Ajouter</button>
-<button onclick="download()">Excel</button>
+<button onclick="add()">AJOUTER</button>
+<button onclick="exportExcel()">EXPORT EXCEL</button>
+<button onclick="importBulk()">IMPORT COLLAB</button>
+
+<textarea id="bulk" placeholder="MLE|NOM|PRENOM|ENTITE|LIEU|GSM"></textarea>
 
 </div>
 
 <div class="card">
-<textarea id="bulk" placeholder="MLE|NOM|PRENOM|GSM|ENTITE|LIEU"></textarea>
-<button onclick="bulkImport()">Coller 2000</button>
-</div>
 
-<div class="card">
 <input id="search" onkeyup="render()" placeholder="Recherche...">
-</div>
-
-<div class="card">
 
 <table>
 <thead>
 <tr>
-<th>#</th><th>MLE</th><th>NOM</th><th>PRENOM</th>
-<th>GSM</th><th>ENTITE</th><th>LIEU</th><th>STATUT</th>
-<th>ACTION</th>
+<th>#</th><th>MLE</th><th>NOM</th><th>PRENOM</th><th>ENTITE</th><th>LIEU</th><th>GSM</th><th>STATUT</th>
 </tr>
 </thead>
-
 <tbody id="t"></tbody>
 </table>
 
@@ -157,10 +166,12 @@ background:#0d1f3a;
 
 let data = JSON.parse(localStorage.getItem("db")||"[]");
 
+/* SAVE */
 function save(){
 localStorage.setItem("db",JSON.stringify(data));
 }
 
+/* ADD */
 function add(){
 
 data.push({
@@ -170,11 +181,6 @@ prenom:prenom.value,
 gsm:gsm.value,
 entite:entite.value,
 lieu:lieu.value,
-date:date.value,
-num:num.value,
-type:type.value,
-prise:prise.value,
-etab:etab.value,
 statut:statut.value
 });
 
@@ -182,21 +188,21 @@ save();
 render();
 }
 
-function bulkImport(){
+/* IMPORT BULK */
+function importBulk(){
 
 let lines = bulk.value.trim().split("\n");
 
 lines.forEach(l=>{
 let p = l.split("|");
-if(p.length>=6){
+if(p.length>=5){
 data.push({
 mle:p[0],
 nom:p[1],
 prenom:p[2],
-gsm:p[3],
-entite:p[4],
-lieu:p[5],
-statut:"EN COURS"
+entite:p[3],
+lieu:p[4],
+gsm:p[5]
 });
 }
 });
@@ -206,46 +212,48 @@ render();
 bulk.value="";
 }
 
+/* RENDER */
 function render(){
 
-let v = search.value?.toLowerCase() || "";
+let v = search.value ? search.value.toLowerCase() : "";
+
 t.innerHTML="";
 
 data.forEach((r,i)=>{
 
-let text = Object.values(r).join(" ").toLowerCase();
-if(!text.includes(v)) return;
+let txt = Object.values(r).join(" ").toLowerCase();
+
+if(txt.includes(v)){
+
+let statusClass = (r.statut=="CLT")?"status-ok":"status-wait";
 
 t.innerHTML+=`
-<tr>
+<tr class="${statusClass}">
 <td>${i+1}</td>
 <td>${r.mle}</td>
 <td>${r.nom}</td>
 <td>${r.prenom}</td>
-<td>${r.gsm}</td>
 <td>${r.entite}</td>
 <td>${r.lieu}</td>
-<td class="${r.statut==="CLOTURE"?"green":"red"}">${r.statut}</td>
-<td><button onclick="del(${i})">X</button></td>
-</tr>
-`;
+<td>${r.gsm}</td>
+<td>${r.statut||""}</td>
+</tr>`;
+}
+
 });
 
 }
 
-function del(i){
-data.splice(i,1);
-save();
-render();
-}
-
-function download(){
+/* EXPORT EXCEL */
+function exportExcel(){
 
 let ws = XLSX.utils.json_to_sheet(data);
-let wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"DATA");
-XLSX.writeFile(wb,"reservations.xlsx");
 
+let wb = XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(wb,ws,"DATA");
+
+XLSX.writeFile(wb,"reservations.xlsx");
 }
 
 render();
