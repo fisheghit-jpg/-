@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation System Pro</title>
+<title>Reservations System</title>
 
 <style>
 body{
@@ -12,7 +12,6 @@ background:#0f172a;
 color:white;
 }
 
-/* CARDS */
 .card{
 background:#111c33;
 margin:15px;
@@ -20,7 +19,6 @@ padding:15px;
 border-radius:10px;
 }
 
-/* INPUT */
 input{
 width:100%;
 padding:10px;
@@ -31,7 +29,6 @@ background:#1e293b;
 color:white;
 }
 
-/* BUTTON */
 button{
 padding:10px;
 background:#38bdf8;
@@ -42,7 +39,6 @@ cursor:pointer;
 margin-top:10px;
 }
 
-/* TABLE */
 table{
 width:100%;
 border-collapse:collapse;
@@ -72,7 +68,6 @@ tr:hover{
 background:#1e293b;
 }
 
-/* TITLE */
 h2{
 text-align:center;
 color:#38bdf8;
@@ -96,11 +91,11 @@ color:#38bdf8;
 <input id="nom" placeholder="NOM">
 <input id="num" placeholder="N°">
 <input id="etab" placeholder="ETABLISSEMENT">
-<input id="periode" placeholder="PERIODE DE RESERVATION">
-<input id="status" placeholder="AUJOURD'HUI">
+<input id="periode" placeholder="PERIODE">
+<input id="status" placeholder="STATUS">
 
 <button onclick="addRes()">Ajouter</button>
-<button onclick="exportCSV()">Export Excel</button>
+<button onclick="openTable()">Ouvrir Tableau</button>
 </div>
 
 <!-- SEARCH -->
@@ -122,7 +117,7 @@ color:#38bdf8;
 <th>ETABLISSEMENT</th>
 <th>PERIODE</th>
 <th>STATUS</th>
-<th>SUPPRIMER</th>
+<th>DELETE</th>
 </tr>
 </thead>
 
@@ -132,18 +127,18 @@ color:#38bdf8;
 
 <script>
 
-/* ===== DATA ===== */
+/* DATA */
 let reservations = JSON.parse(localStorage.getItem("res")) || [];
 
-/* ===== SAVE ===== */
+/* SAVE */
 function save(){
 localStorage.setItem("res", JSON.stringify(reservations));
 }
 
-/* ===== ADD ===== */
+/* ADD */
 function addRes(){
 
-let data={
+let r={
 o:document.getElementById("o").value,
 m:document.getElementById("m").value,
 nom:document.getElementById("nom").value,
@@ -153,31 +148,19 @@ periode:document.getElementById("periode").value,
 status:document.getElementById("status").value
 };
 
-reservations.push(data);
+reservations.push(r);
 save();
 render();
 }
 
-/* ===== STATUS COLORS ===== */
-function getColor(s){
-s=s.toLowerCase();
-
-if(s.includes("prise")) return "#22c55e";
-if(s.includes("attente")) return "#facc15";
-if(s.includes("refus")) return "#ef4444";
-if(s.includes("urgent")) return "#f97316";
-
-return "white";
-}
-
-/* ===== DELETE ===== */
+/* DELETE */
 function del(i){
 reservations.splice(i,1);
 save();
 render();
 }
 
-/* ===== RENDER ===== */
+/* RENDER */
 function render(){
 
 let t=document.getElementById("table");
@@ -192,42 +175,73 @@ t.innerHTML+=`
 <td>${r.num}</td>
 <td>${r.etab}</td>
 <td>${r.periode}</td>
-<td style="color:${getColor(r.status)}">${r.status}</td>
-<td><button onclick="del(${i})" style="background:#ef4444;color:white;">X</button></td>
+<td>${r.status}</td>
+<td><button onclick="del(${i})" style="background:red;color:white;">X</button></td>
 </tr>
 `;
 });
 }
+render();
 
-/* ===== SEARCH ===== */
+/* SEARCH */
 function searchTable(){
-let value=document.getElementById("search").value.toLowerCase();
+let v=document.getElementById("search").value.toLowerCase();
 let rows=document.querySelectorAll("#table tr");
 
 rows.forEach(r=>{
-r.style.display=r.innerText.toLowerCase().includes(value)?"":"none";
+r.style.display=r.innerText.toLowerCase().includes(v)?"":"none";
 });
 }
 
-/* ===== EXPORT CSV ===== */
-function exportCSV(){
+/* OPEN CLEAN WINDOW TABLE */
+function openTable(){
 
-let csv="O,MLE,NOM,N°,ETABLISSEMENT,PERIODE,STATUS\n";
+let w=window.open("","_blank");
+
+let html=`
+<html>
+<head>
+<title>Table</title>
+<style>
+body{font-family:Segoe UI;background:#0f172a;color:white;padding:20px;}
+h2{text-align:center;color:#38bdf8;}
+table{width:100%;border-collapse:collapse;background:#0b1220;}
+th{background:#1e293b;color:#38bdf8;padding:10px;}
+td{padding:10px;border-bottom:1px solid #1e293b;}
+tr:nth-child(even){background:#0f172a;}
+tr:hover{background:#1e293b;}
+</style>
+</head>
+
+<body>
+
+<h2>TABLE RESERVATIONS</h2>
+
+<table>
+<tr>
+<th>O</th><th>MLE</th><th>NOM</th><th>N°</th>
+<th>ETABLISSEMENT</th><th>PERIODE</th><th>STATUS</th>
+</tr>
+`;
 
 reservations.forEach(r=>{
-csv+=`${r.o},${r.m},${r.nom},${r.num},${r.etab},${r.periode},${r.status}\n`;
+html+=`
+<tr>
+<td>${r.o}</td>
+<td>${r.m}</td>
+<td>${r.nom}</td>
+<td>${r.num}</td>
+<td>${r.etab}</td>
+<td>${r.periode}</td>
+<td>${r.status}</td>
+</tr>
+`;
 });
 
-let blob=new Blob([csv],{type:"text/csv"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="reservations.csv";
-a.click();
-}
+html+=`</table></body></html>`;
 
-/* ===== AUTO LOAD TABLE ===== */
-window.onload = function(){
-render();
+w.document.write(html);
+w.document.close();
 }
 
 </script>
