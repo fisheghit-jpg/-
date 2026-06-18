@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation System Pro</title>
+<title>Gestion Avancée 3029</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -14,41 +14,32 @@ background:#0b1220;
 color:#e5e7eb;
 }
 
-/* HEADER */
 .header{
+padding:15px;
 text-align:center;
-padding:18px;
-font-size:20px;
 color:#f5d36c;
+font-size:20px;
 letter-spacing:2px;
 }
 
-/* CARD */
 .card{
-margin:12px;
-padding:12px;
+margin:15px;
+padding:15px;
 background:#111827;
 border-radius:12px;
-border:1px solid #2a2f3a;
+border:1px solid rgba(245,211,108,0.2);
 }
 
-/* INPUT */
-input,select,textarea{
+input, textarea, select{
 width:100%;
 padding:10px;
-margin:6px 0;
+margin:5px 0;
 border-radius:8px;
 border:none;
 background:#0f172a;
 color:white;
-outline:none;
 }
 
-input:focus,select:focus,textarea:focus{
-border:1px solid #f5d36c;
-}
-
-/* BUTTON */
 button{
 padding:10px 12px;
 margin:5px;
@@ -60,160 +51,99 @@ color:#0b1220;
 font-weight:bold;
 }
 
-/* TABLE */
 table{
 width:100%;
 border-collapse:collapse;
 margin-top:10px;
 }
 
-th{
-color:#f5d36c;
-padding:10px;
-border-bottom:1px solid #2a2f3a;
-font-size:13px;
-}
-
-td{
+th,td{
 padding:10px;
 border-bottom:1px solid #1f2937;
 font-size:13px;
 }
 
+th{
+color:#f5d36c;
+}
+
 tr:hover{
 background:#1e293b;
 }
+
+.status-ok{color:#22c55e;font-weight:bold;}
+.status-bad{color:#ef4444;font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<div class="header">RESERVATION SYSTEM PRO</div>
+<div class="header">SYSTÈME DE GESTION AVANCÉ 3029</div>
 
-<!-- FORM -->
 <div class="card">
 
-<input id="mle" placeholder="MLE">
-<input id="nom" placeholder="NOM">
-<input id="res" placeholder="N° DE RESERVATION">
+<input id="search" placeholder="Recherche..." onkeyup="render()">
 
-<select id="type">
-<option>EXCURSION</option>
-<option>CONVENTION</option>
-</select>
+<textarea id="bulkData" rows="6"
+placeholder="COLLER ICI: MLE|NOM|PRENOM|GSM|ENTITE|LIEU|DATE|N°|TYPE|CHECKIN|CHECKOUT|ETABLISSEMENT|PROPOSITION|PRISE_EN_CHARGE|STATUT"></textarea>
 
-<input id="checkin" placeholder="CHECK IN">
-<input id="checkout" placeholder="CHECK OUT">
-<input id="prop" placeholder="PROPOSITION">
-<input id="etab" placeholder="ETABLISSEMENT">
-
-<select id="prise">
-<option>BAKOFFICE</option>
-<option>RECEPTION</option>
-<option>DIRECT</option>
-</select>
-
-<button onclick="addRes()">Ajouter</button>
-<button onclick="clearForm()">Annuler</button>
-<button onclick="downloadExcel()">Excel</button>
+<button onclick="importBulk()">📋 Coller 2000+</button>
+<button onclick="downloadExcel()">📥 Export Excel</button>
 
 </div>
 
-<!-- BULK -->
 <div class="card">
-<textarea id="bulk" rows="6"
-placeholder="MLE|NOM|RES|TYPE|IN|OUT|PROP|ETAB|PRISE"></textarea>
-<button onclick="bulkImport()">Importer 2000+</button>
-</div>
 
-<!-- SEARCH -->
-<div class="card">
-<input id="search" onkeyup="render()" placeholder="Recherche">
-</div>
-
-<!-- TABLE -->
-<div class="card">
 <table>
 <thead>
 <tr>
 <th>#</th>
 <th>MLE</th>
 <th>NOM</th>
-<th>RES</th>
+<th>PRENOM</th>
+<th>GSM</th>
+<th>ENTITE</th>
+<th>LIEU</th>
+<th>DATE</th>
+<th>N°</th>
 <th>TYPE</th>
 <th>IN</th>
 <th>OUT</th>
-<th>PROP</th>
 <th>ETAB</th>
+<th>PROP</th>
 <th>PRISE</th>
-<th>ACTION</th>
+<th>STATUT</th>
 </tr>
 </thead>
-<tbody id="t"></tbody>
+<tbody id="table"></tbody>
 </table>
+
 </div>
 
 <script>
 
-let reservations = JSON.parse(localStorage.getItem("res") || "[]");
+let data = JSON.parse(localStorage.getItem("db") || "[]");
 
-/* SAVE */
 function save(){
-localStorage.setItem("res", JSON.stringify(reservations));
+localStorage.setItem("db", JSON.stringify(data));
 }
 
-/* CLEAR */
-function clearForm(){
-mle.value="";
-nom.value="";
-res.value="";
-checkin.value="";
-checkout.value="";
-prop.value="";
-etab.value="";
-}
+/* ===== BULK IMPORT (2000+) ===== */
+function importBulk(){
 
-/* ADD */
-function addRes(){
-
-reservations.push({
-m:mle.value,
-n:nom.value,
-r:res.value,
-t:type.value,
-ci:checkin.value,
-co:checkout.value,
-p:prop.value,
-e:etab.value,
-pr:prise.value
-});
-
-save();
-render();
-clearForm();
-}
-
-/* DELETE */
-function del(i){
-reservations.splice(i,1);
-save();
-render();
-}
-
-/* BULK IMPORT (2000+) */
-function bulkImport(){
-
-let lines = bulk.value.trim().split("\n");
+let lines = document.getElementById("bulkData").value.trim().split("\n");
 
 lines.forEach(l=>{
 
 let p = l.split("|");
 
-if(p.length>=9){
+if(p.length >= 16){
 
-reservations.push({
-m:p[0],n:p[1],r:p[2],t:p[3],
-ci:p[4],co:p[5],p:p[6],e:p[7],pr:p[8]
+data.push({
+mle:p[0], nom:p[1], prenom:p[2], gsm:p[3],
+entite:p[4], lieu:p[5], date:p[6], num:p[7],
+type:p[8], cin:p[9], cout:p[10], etab:p[11],
+prop:p[12], prise:p[13], statut:p[14]
 });
 
 }
@@ -222,56 +152,66 @@ ci:p[4],co:p[5],p:p[6],e:p[7],pr:p[8]
 
 save();
 render();
-bulk.value="";
+document.getElementById("bulkData").value="";
+alert("Import terminé");
 
 }
 
-/* RENDER */
+/* ===== RENDER ===== */
 function render(){
 
-let v = search.value?.toLowerCase() || "";
+let v = document.getElementById("search").value.toLowerCase();
+
+let t = document.getElementById("table");
 t.innerHTML="";
 
-reservations.forEach((r,i)=>{
+data.forEach((r,i)=>{
 
-let row = (Object.values(r).join(" ")).toLowerCase();
-
-if(row.includes(v)){
+let txt = Object.values(r).join(" ").toLowerCase();
+if(!txt.includes(v)) return;
 
 t.innerHTML += `
 <tr>
 <td>${i+1}</td>
-<td>${r.m}</td>
-<td>${r.n}</td>
-<td>${r.r}</td>
-<td>${r.t}</td>
-<td>${r.ci}</td>
-<td>${r.co}</td>
-<td>${r.p}</td>
-<td>${r.e}</td>
-<td>${r.pr}</td>
-<td><button onclick="del(${i})">🗑</button></td>
+<td>${r.mle||""}</td>
+<td>${r.nom||""}</td>
+<td>${r.prenom||""}</td>
+<td>${r.gsm||""}</td>
+<td>${r.entite||""}</td>
+<td>${r.lieu||""}</td>
+<td>${r.date||""}</td>
+<td>${r.num||""}</td>
+<td>${r.type||""}</td>
+<td>${r.cin||""}</td>
+<td>${r.cout||""}</td>
+<td>${r.etab||""}</td>
+<td>${r.prop||""}</td>
+<td>${r.prise||""}</td>
+<td class="${r.statut=='CLOTURE'?'status-ok':'status-bad'}">
+${r.statut||""}
+</td>
 </tr>
 `;
-
-}
 
 });
 
 }
 
-/* EXCEL */
+/* ===== EXCEL EXPORT ===== */
 function downloadExcel(){
 
-let ws = XLSX.utils.json_to_sheet(reservations.map((r,i)=>({
-"#":i+1,...r
-})));
+let ws = XLSX.utils.json_to_sheet(data);
+
+ws["!cols"] = [
+{wch:6},{wch:10},{wch:10},{wch:10},{wch:12},
+{wch:12},{wch:10},{wch:8},{wch:10},{wch:10},
+{wch:8},{wch:8},{wch:12},{wch:12},{wch:12},{wch:10}
+];
 
 let wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Reservations");
+XLSX.utils.book_append_sheet(wb, ws, "DATA");
 
-XLSX.writeFile(wb,"Reservations.xlsx");
-
+XLSX.writeFile(wb, "gestion.xlsx");
 }
 
 render();
