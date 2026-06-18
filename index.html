@@ -2,32 +2,24 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Future Reservation XLSX</title>
+<title>Reservation System</title>
 
-<!-- XLSX LIBRARY -->
+<!-- Excel Library -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
 margin:0;
 font-family:Segoe UI;
-background:#0b1220;
+background:#0f172a;
 color:white;
 }
 
-.header{
-text-align:center;
-padding:20px;
-color:#f5d36c;
-font-size:22px;
-}
-
 .card{
+background:#111827;
 margin:15px;
 padding:15px;
-background:#111827;
-border-radius:12px;
-border:1px solid #f5d36c33;
+border-radius:10px;
 }
 
 input{
@@ -36,7 +28,7 @@ padding:10px;
 margin:5px 0;
 border-radius:8px;
 border:none;
-background:#0b1220;
+background:#1e293b;
 color:white;
 }
 
@@ -46,7 +38,7 @@ margin:5px;
 border:none;
 border-radius:8px;
 cursor:pointer;
-background:#f5d36c;
+background:#d4af37;
 color:#0b1220;
 font-weight:bold;
 }
@@ -57,24 +49,22 @@ border-collapse:collapse;
 margin-top:10px;
 }
 
-th,td{
+td,th{
 padding:10px;
-border-bottom:1px solid #222;
+border-bottom:1px solid #1e293b;
 }
 
 th{
-color:#f5d36c;
-}
-
-tr:hover{
-background:#1e293b;
+color:#d4af37;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">RESERVATION SYSTEM 3029</div>
+<div class="card">
+<h2 style="text-align:center;color:#d4af37;">Reservation System</h2>
+</div>
 
 <div class="card">
 <input id="m" placeholder="MLE">
@@ -116,10 +106,12 @@ background:#1e293b;
 let reservations = JSON.parse(localStorage.getItem("res") || "[]");
 let editIndex = -1;
 
+/* SAVE */
 function save(){
 localStorage.setItem("res", JSON.stringify(reservations));
 }
 
+/* GET DATA */
 function getData(){
 return {
 m: document.getElementById("m").value.trim(),
@@ -131,6 +123,7 @@ status: document.getElementById("status").value.trim()
 };
 }
 
+/* CLEAR */
 function clearForm(){
 document.getElementById("m").value="";
 document.getElementById("nom").value="";
@@ -141,6 +134,7 @@ document.getElementById("status").value="";
 editIndex=-1;
 }
 
+/* ADD */
 function addRes(){
 
 let d=getData();
@@ -162,8 +156,8 @@ render();
 clearForm();
 }
 
+/* EDIT */
 function startEdit(i){
-
 let r=reservations[i];
 
 document.getElementById("m").value=r.m;
@@ -176,14 +170,15 @@ document.getElementById("status").value=r.status;
 editIndex=i;
 }
 
+/* DELETE */
 function del(i){
 reservations.splice(i,1);
 save();
 render();
 }
 
+/* RENDER */
 function render(){
-
 let t=document.getElementById("table");
 t.innerHTML="";
 
@@ -203,20 +198,18 @@ t.innerHTML+=`
 </td>
 </tr>`;
 });
-
 }
 
+/* SEARCH */
 function searchTable(){
-
 let v=document.getElementById("search").value.toLowerCase();
 
 document.querySelectorAll("#table tr").forEach(r=>{
 r.style.display=r.innerText.toLowerCase().includes(v)?"":"none";
 });
-
 }
 
-/* ===== EXCEL EXPORT ===== */
+/* EXCEL DOWNLOAD (REAL .XLSX) */
 function downloadExcel(){
 
 let data = reservations.map((r,i)=>({
