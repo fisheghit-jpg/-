@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation Pro System</title>
+<title>Smart Reservation System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -10,27 +10,28 @@
 body{
 margin:0;
 font-family:Segoe UI;
-background:#eaf2ff;
-color:#0f172a;
+background:#f4f8ff;
+color:#0b1b33;
 }
 
 /* HEADER */
 .header{
 background:#1e3a8a;
 color:white;
-padding:15px;
+padding:20px;
 text-align:center;
 font-size:20px;
 font-weight:bold;
+letter-spacing:1px;
 }
 
-/* CONTAINER */
+/* CARDS */
 .card{
 background:white;
-margin:12px;
-padding:12px;
-border-radius:10px;
-box-shadow:0 2px 8px rgba(0,0,0,0.08);
+margin:15px;
+padding:15px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
 
 /* INPUT */
@@ -38,13 +39,13 @@ input,select,textarea{
 width:100%;
 padding:10px;
 margin:5px 0;
+border:1px solid #cfe0ff;
 border-radius:8px;
-border:1px solid #cbd5e1;
 outline:none;
 }
 
-input:focus,select:focus,textarea:focus{
-border-color:#2563eb;
+input:focus{
+border-color:#1e3a8a;
 }
 
 /* BUTTON */
@@ -54,45 +55,46 @@ margin:5px;
 border:none;
 border-radius:8px;
 cursor:pointer;
-background:#2563eb;
+background:#1e3a8a;
 color:white;
-font-weight:bold;
 }
 
 button:hover{
-background:#1d4ed8;
+background:#2563eb;
 }
 
 /* TABLE */
 table{
 width:100%;
 border-collapse:collapse;
-font-size:13px;
 }
 
 th{
 background:#1e3a8a;
 color:white;
-padding:8px;
-position:sticky;
-top:0;
+padding:10px;
+font-size:13px;
 }
 
 td{
-padding:8px;
-border-bottom:1px solid #e5e7eb;
+padding:10px;
+border-bottom:1px solid #e5edff;
+font-size:13px;
 }
 
-tr:nth-child(even){
-background:#f8fafc;
+tr:hover{
+background:#f0f6ff;
 }
 
+/* STATUS */
 .status-ok{
-background:#dcfce7 !important;
+color:green;
+font-weight:bold;
 }
 
-.status-wait{
-background:#fee2e2 !important;
+.status-no{
+color:red;
+font-weight:bold;
 }
 </style>
 </head>
@@ -100,30 +102,30 @@ background:#fee2e2 !important;
 <body>
 
 <div class="header">
-SYSTEME RESERVATION BLUE & WHITE
+SMART RESERVATION SYSTEM - BLUE EDITION
 </div>
 
 <div class="card">
+
+<h3>AJOUT / MODIFICATION</h3>
 
 <input id="mle" placeholder="MLE">
 <input id="nom" placeholder="NOM">
 <input id="prenom" placeholder="PRENOM">
 <input id="gsm" placeholder="GSM">
 <input id="entite" placeholder="ENTITE">
-<input id="lieu" placeholder="LIEU AFFECTATION">
-<input id="date_demande" type="date">
+<input id="lieu" placeholder="LIEU D'AFFECTATION">
 
-<input id="num_res" placeholder="N° RESERVATION">
+<input id="date" placeholder="DATE DE DEMANDE">
+<input id="numres" placeholder="N° RESERVATION">
 
-<select id="type_res">
-<option>EXCURSION</option>
-<option>CONVENTION</option>
-</select>
+<input id="type" placeholder="TYPE (EXCURSION / CONVENTION)">
+<input id="checkin" placeholder="CHECK IN">
+<input id="checkout" placeholder="CHECK OUT">
 
-<input id="checkin" type="date">
-<input id="checkout" type="date">
+<input id="etab" placeholder="ETABLISSEMENT">
 
-<select id="prise_charge">
+<select id="prise">
 <option>BATAH</option>
 <option>RADI</option>
 <option>ANASS</option>
@@ -134,16 +136,35 @@ SYSTEME RESERVATION BLUE & WHITE
 <option>AUTRE</option>
 </select>
 
-<select id="statut">
+<select id="status">
 <option value="ENC">EN COURS</option>
-<option value="CLT">CLOTURE</option>
+<option value="CLO">CLOTURE</option>
 </select>
 
-<button onclick="add()">AJOUTER</button>
-<button onclick="exportExcel()">EXPORT EXCEL</button>
-<button onclick="importBulk()">IMPORT COLLAB</button>
+<button onclick="add()">Ajouter</button>
+<button onclick="clearForm()">Vider</button>
 
-<textarea id="bulk" placeholder="MLE|NOM|PRENOM|ENTITE|LIEU|GSM"></textarea>
+</div>
+
+<div class="card">
+
+<h3>IMPORT COLLABORATEURS (Ctrl+V Excel)</h3>
+
+<textarea id="bulk" rows="6"
+placeholder="MLE | NOM | PRENOM | GSM | ENTITE | LIEU"></textarea>
+
+<button onclick="importBulk()">Importer employés</button>
+
+</div>
+
+<div class="card">
+
+<h3>HOTELS IMPORT</h3>
+
+<textarea id="hotels" rows="4"
+placeholder="Liste hôtels (une par ligne)"></textarea>
+
+<button onclick="importHotels()">Importer hotels</button>
 
 </div>
 
@@ -151,114 +172,25 @@ SYSTEME RESERVATION BLUE & WHITE
 
 <input id="search" onkeyup="render()" placeholder="Recherche...">
 
+</div>
+
+<div class="card">
+
 <table>
 <thead>
 <tr>
-<th>#</th><th>MLE</th><th>NOM</th><th>PRENOM</th><th>ENTITE</th><th>LIEU</th><th>GSM</th><th>STATUT</th>
+<th>#</th>
+<th>MLE</th>
+<th>NOM</th>
+<th>PRENOM</th>
+<th>GSM</th>
+<th>ENTITE</th>
+<th>LIEU</th>
+<th>STATUS</th>
+<th>ACTIONS</th>
 </tr>
 </thead>
-<tbody id="t"></tbody>
+<tbody id="table"></tbody>
 </table>
 
 </div>
-
-<script>
-
-let data = JSON.parse(localStorage.getItem("db")||"[]");
-
-/* SAVE */
-function save(){
-localStorage.setItem("db",JSON.stringify(data));
-}
-
-/* ADD */
-function add(){
-
-data.push({
-mle:mle.value,
-nom:nom.value,
-prenom:prenom.value,
-gsm:gsm.value,
-entite:entite.value,
-lieu:lieu.value,
-statut:statut.value
-});
-
-save();
-render();
-}
-
-/* IMPORT BULK */
-function importBulk(){
-
-let lines = bulk.value.trim().split("\n");
-
-lines.forEach(l=>{
-let p = l.split("|");
-if(p.length>=5){
-data.push({
-mle:p[0],
-nom:p[1],
-prenom:p[2],
-entite:p[3],
-lieu:p[4],
-gsm:p[5]
-});
-}
-});
-
-save();
-render();
-bulk.value="";
-}
-
-/* RENDER */
-function render(){
-
-let v = search.value ? search.value.toLowerCase() : "";
-
-t.innerHTML="";
-
-data.forEach((r,i)=>{
-
-let txt = Object.values(r).join(" ").toLowerCase();
-
-if(txt.includes(v)){
-
-let statusClass = (r.statut=="CLT")?"status-ok":"status-wait";
-
-t.innerHTML+=`
-<tr class="${statusClass}">
-<td>${i+1}</td>
-<td>${r.mle}</td>
-<td>${r.nom}</td>
-<td>${r.prenom}</td>
-<td>${r.entite}</td>
-<td>${r.lieu}</td>
-<td>${r.gsm}</td>
-<td>${r.statut||""}</td>
-</tr>`;
-}
-
-});
-
-}
-
-/* EXPORT EXCEL */
-function exportExcel(){
-
-let ws = XLSX.utils.json_to_sheet(data);
-
-let wb = XLSX.utils.book_new();
-
-XLSX.utils.book_append_sheet(wb,ws,"DATA");
-
-XLSX.writeFile(wb,"reservations.xlsx");
-}
-
-render();
-
-</script>
-
-</body>
-</html>
