@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation System Pro</title>
+<title>Reservation Blue System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -10,89 +10,81 @@
 body{
 margin:0;
 font-family:Segoe UI;
-background:#0a0a0a;
-color:#fff;
+background:linear-gradient(135deg,#0b1b3a,#071022);
+color:#e5f2ff;
 }
 
-header{
-padding:15px;
+/* HEADER */
+h2{
 text-align:center;
-font-size:20px;
-border-bottom:1px solid #333;
+color:#6ec1ff;
+padding:10px;
 }
 
-.container{
-padding:15px;
-}
-
+/* CARD */
 .card{
-background:#111;
-padding:12px;
-margin-bottom:10px;
-border:1px solid #333;
-border-radius:8px;
+margin:15px;
+padding:15px;
+background:rgba(255,255,255,0.04);
+border-radius:12px;
+border:1px solid rgba(110,193,255,0.2);
 }
 
+/* INPUT */
 input,select,textarea{
 width:100%;
 padding:10px;
-margin:5px 0;
-background:#000;
-color:#fff;
-border:1px solid #444;
-border-radius:6px;
-}
-
-button{
-padding:10px;
-margin:5px;
-background:#fff;
-color:#000;
+margin:6px 0;
+border-radius:8px;
 border:none;
-border-radius:6px;
+background:#0a1a33;
+color:white;
+}
+
+/* BUTTON */
+button{
+padding:10px 12px;
+margin:5px;
+background:#4db6ff;
+border:none;
+border-radius:8px;
 cursor:pointer;
+font-weight:bold;
+color:#00152a;
 }
+button:hover{opacity:0.85}
 
-button:hover{
-opacity:0.8;
-}
-
+/* TABLE */
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
-font-size:13px;
-}
-
-th,td{
-border:1px solid #333;
-padding:8px;
-text-align:center;
 }
 
 th{
-background:#111;
+background:#0d2a4a;
+color:#6ec1ff;
+padding:10px;
 }
 
-.status-ok{
-color:#00ff88;
-font-weight:bold;
+td{
+padding:8px;
+border-bottom:1px solid #123;
 }
 
-.status-no{
-color:#ff4444;
-font-weight:bold;
+tr:hover{
+background:#0d1f3a;
 }
+
+/* STATUS COLORS */
+.green{color:#00ff99;font-weight:bold}
+.red{color:#ff5c5c;font-weight:bold}
 </style>
 </head>
 
 <body>
 
-<header>RESERVATION SYSTEM BLACK/WHITE PRO</header>
+<h2>SMART RESERVATION SYSTEM</h2>
 
-<div class="container">
-
-<!-- INPUT FORM -->
 <div class="card">
 
 <input id="mle" placeholder="MLE">
@@ -101,19 +93,13 @@ font-weight:bold;
 <input id="gsm" placeholder="GSM">
 <input id="entite" placeholder="ENTITE">
 <input id="lieu" placeholder="LIEU D'AFFECTATION">
-<input id="date" type="date">
-
+<input id="date" placeholder="DATE DEMANDE">
 <input id="num" placeholder="N° RESERVATION">
 
 <select id="type">
 <option>EXCURSION</option>
 <option>CONVENTION</option>
 </select>
-
-<input id="checkin" type="date">
-<input id="checkout" type="date">
-
-<input id="etab" placeholder="ETABLISSEMENT">
 
 <select id="prise">
 <option>BATAH</option>
@@ -126,51 +112,44 @@ font-weight:bold;
 <option>AUTRE</option>
 </select>
 
-<select id="status">
-<option value="ENCOURS">EN COURS</option>
+<select id="etab">
+<option>ETABLISSEMENT 1</option>
+<option>ETABLISSEMENT 2</option>
+<option>ETABLISSEMENT 3</option>
+</select>
+
+<select id="statut">
+<option value="EN COURS">EN COURS</option>
 <option value="CLOTURE">CLOTURE</option>
 </select>
 
-<button onclick="add()">AJOUTER</button>
-<button onclick="clearF()">CLEAR</button>
+<button onclick="add()">Ajouter</button>
+<button onclick="download()">Excel</button>
 
 </div>
 
-<!-- BULK PASTE -->
 <div class="card">
-
-<textarea id="bulk" rows="6"
-placeholder="MLE|NOM|PRENOM|GSM|ENTITE|LIEU"></textarea>
-
-<button onclick="bulkImport()">IMPORT COLLER</button>
-
+<textarea id="bulk" placeholder="MLE|NOM|PRENOM|GSM|ENTITE|LIEU"></textarea>
+<button onclick="bulkImport()">Coller 2000</button>
 </div>
 
-<!-- SEARCH -->
 <div class="card">
-<input id="search" onkeyup="render()" placeholder="RECHERCHE">
+<input id="search" onkeyup="render()" placeholder="Recherche...">
 </div>
 
-<!-- TABLE -->
 <div class="card">
+
 <table>
 <thead>
 <tr>
-<th>#</th>
-<th>MLE</th>
-<th>NOM</th>
-<th>PRENOM</th>
-<th>GSM</th>
-<th>ENTITE</th>
-<th>LIEU</th>
-<th>STATUS</th>
+<th>#</th><th>MLE</th><th>NOM</th><th>PRENOM</th>
+<th>GSM</th><th>ENTITE</th><th>LIEU</th><th>STATUT</th>
+<th>ACTION</th>
 </tr>
 </thead>
+
 <tbody id="t"></tbody>
 </table>
-</div>
-
-<button onclick="exportExcel()">EXPORT EXCEL</button>
 
 </div>
 
@@ -191,16 +170,16 @@ prenom:prenom.value,
 gsm:gsm.value,
 entite:entite.value,
 lieu:lieu.value,
-status:status.value
+date:date.value,
+num:num.value,
+type:type.value,
+prise:prise.value,
+etab:etab.value,
+statut:statut.value
 });
 
 save();
 render();
-clearF();
-}
-
-function clearF(){
-document.querySelectorAll("input").forEach(i=>i.value="");
 }
 
 function bulkImport(){
@@ -217,7 +196,7 @@ prenom:p[2],
 gsm:p[3],
 entite:p[4],
 lieu:p[5],
-status:"ENCOURS"
+statut:"EN COURS"
 });
 }
 });
@@ -230,16 +209,14 @@ bulk.value="";
 function render(){
 
 let v = search.value?.toLowerCase() || "";
-
 t.innerHTML="";
 
 data.forEach((r,i)=>{
 
-let row = Object.values(r).join(" ").toLowerCase();
+let text = Object.values(r).join(" ").toLowerCase();
+if(!text.includes(v)) return;
 
-if(row.includes(v)){
-
-t.innerHTML += `
+t.innerHTML+=`
 <tr>
 <td>${i+1}</td>
 <td>${r.mle}</td>
@@ -248,29 +225,27 @@ t.innerHTML += `
 <td>${r.gsm}</td>
 <td>${r.entite}</td>
 <td>${r.lieu}</td>
-<td class="${r.status=='CLOTURE'?'status-ok':'status-no'}">${r.status}</td>
+<td class="${r.statut==="CLOTURE"?"green":"red"}">${r.statut}</td>
+<td><button onclick="del(${i})">X</button></td>
 </tr>
 `;
-
-}
-
 });
 
 }
 
-function exportExcel(){
+function del(i){
+data.splice(i,1);
+save();
+render();
+}
+
+function download(){
 
 let ws = XLSX.utils.json_to_sheet(data);
-
-ws["!cols"] = [
-{wch:5},{wch:10},{wch:10},{wch:12},
-{wch:15},{wch:20},{wch:12},{wch:12}
-];
-
 let wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"DATA");
-
 XLSX.writeFile(wb,"reservations.xlsx");
+
 }
 
 render();
