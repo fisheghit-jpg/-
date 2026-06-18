@@ -1,49 +1,45 @@
 <script>
 
-/* ==========================
-   Configuration
-========================== */
+/****************************************
+            CONFIG
+****************************************/
 
-const STORAGE_KEY = "reservations";
+const STORAGE = "reservations";
+
 let reservations = [];
-let editIndex = -1;
+let editIndex = null;
 
 
-/* ==========================
-   Elements
-========================== */
+/****************************************
+            ELEMENTS
+****************************************/
 
-const table = document.getElementById("table");
+const $ = id => document.getElementById(id);
 
-const m = document.getElementById("m");
-const nom = document.getElementById("nom");
-const num = document.getElementById("num");
-const etab = document.getElementById("etab");
-const periode = document.getElementById("periode");
-const status = document.getElementById("status");
-const search = document.getElementById("search");
+const table = $("table");
+const search = $("search");
 
 
-/* ==========================
-   LocalStorage
-========================== */
+/****************************************
+            STORAGE
+****************************************/
 
-function load(){
+function loadData(){
 
     reservations = JSON.parse(
 
-        localStorage.getItem(STORAGE_KEY)
+        localStorage.getItem(STORAGE)
 
     ) || [];
 
 }
 
 
-function save(){
+function saveData(){
 
     localStorage.setItem(
 
-        STORAGE_KEY,
+        STORAGE,
 
         JSON.stringify(reservations)
 
@@ -52,268 +48,234 @@ function save(){
 }
 
 
+/****************************************
+            FORM
+****************************************/
 
-/* ==========================
-   Form
-========================== */
+function formData(){
+
+return{
+
+m:$("m").value.trim(),
+
+nom:$("nom").value.trim(),
+
+num:$("num").value.trim(),
+
+etab:$("etab").value.trim(),
+
+periode:$("periode").value.trim(),
+
+status:$("status").value.trim()
+
+};
+
+}
+
+
 
 function clearForm(){
 
-    m.value="";
-    nom.value="";
-    num.value="";
-    etab.value="";
-    periode.value="";
-    status.value="";
+[
+"m",
+"nom",
+"num",
+"etab",
+"periode",
+"status"
 
-    editIndex=-1;
+]
 
-}
+.forEach(id=>{
+
+$(id).value="";
+
+});
 
 
-
-function getData(){
-
-    return{
-
-        m:m.value.trim(),
-
-        nom:nom.value.trim(),
-
-        num:num.value.trim(),
-
-        etab:etab.value.trim(),
-
-        periode:periode.value.trim(),
-
-        status:status.value.trim()
-
-    };
+editIndex=null;
 
 }
 
 
 
-/* ==========================
-   Add
-========================== */
+/****************************************
+        ADD / UPDATE
+****************************************/
 
 function addRes(){
 
-    const data = getData();
 
-
-    if(data.nom===""){
-
-        alert("Entrer un NOM");
-
-        return;
-
-    }
+const data = formData();
 
 
 
-    if(editIndex===-1){
+if(!data.nom){
 
-        reservations.push(data);
+alert("NOM obligatoire");
 
-    }
-
-    else{
-
-        reservations[editIndex]=data;
-
-        editIndex=-1;
-
-    }
-
-
-    save();
-
-    render();
-
-    clearForm();
+return;
 
 }
 
 
 
-/* ==========================
-   Edit
-========================== */
 
-function startEdit(index){
+if(editIndex===null){
 
-    const r = reservations[index];
-
-
-    m.value=r.m;
-    nom.value=r.nom;
-    num.value=r.num;
-    etab.value=r.etab;
-    periode.value=r.periode;
-    status.value=r.status;
-
-
-    editIndex=index;
+reservations.push(data);
 
 }
 
 
-
-/* ==========================
-   Delete
-========================== */
-
-function del(index){
-
-    const ok = confirm(
-
-        "Supprimer cette réservation ?"
-
-    );
+else{
 
 
-    if(!ok) return;
+reservations[editIndex]=data;
 
-
-
-    reservations.splice(index,1);
-
-
-    save();
-
-    render();
-
-}
-
-
-
-/* ==========================
-   Render
-========================== */
-
-function render(){
-
-
-    table.innerHTML="";
-
-
-    reservations.forEach((r,index)=>{
-
-
-        const row=`
-
-        <tr>
-
-        <td>${index+1}</td>
-
-        <td>${r.m}</td>
-
-        <td>${r.nom}</td>
-
-        <td>${r.num}</td>
-
-        <td>${r.etab}</td>
-
-        <td>${r.periode}</td>
-
-        <td>${r.status}</td>
-
-        <td>
-
-        <button
-        onclick="startEdit(${index})">
-
-        ✏️
-
-        </button>
-
-
-        <button
-
-        onclick="del(${index})"
-
-        style="background:red;color:white;">
-
-        🗑️
-
-        </button>
-
-        </td>
-
-        </tr>
-
-        `;
-
-
-        table.innerHTML += row;
-
-
-    });
+editIndex=null;
 
 
 }
 
 
 
-/* ==========================
-   Search
-========================== */
+saveData();
+
+render();
+
+clearForm();
+
+
+}
+
+
+
+
+/****************************************
+            EDIT
+****************************************/
+
+function startEdit(i){
+
+
+const r = reservations[i];
+
+
+
+$("m").value=r.m;
+
+$("nom").value=r.nom;
+
+$("num").value=r.num;
+
+$("etab").value=r.etab;
+
+$("periode").value=r.periode;
+
+$("status").value=r.status;
+
+
+
+editIndex=i;
+
+
+}
+
+
+
+
+
+/****************************************
+            DELETE
+****************************************/
+
+function del(i){
+
+
+if(
+
+confirm(
+
+"Supprimer ?"
+
+)
+
+){
+
+
+reservations.splice(i,1);
+
+saveData();
+
+render();
+
+}
+
+
+
+}
+
+
+
+
+/****************************************
+            SEARCH
+****************************************/
 
 function searchTable(){
 
+const value=
 
-    const value =
-
-    search.value.toLowerCase();
-
-
-
-    const rows =
-
-    document.querySelectorAll(
-
-        "#table tr"
-
-    );
+search.value.toLowerCase();
 
 
 
-    rows.forEach(row=>{
+document
+
+.querySelectorAll("#table tr")
+
+.forEach(row=>{
 
 
-        row.style.display =
+row.style.display =
 
 
-        row.innerText
-        .toLowerCase()
-        .includes(value)
+row.innerText
+.toLowerCase()
+.includes(value)
 
 
-        ? ""
+?
 
-        : "none";
+""
+
+:
+
+"none";
 
 
-    });
+});
 
 
 }
 
 
 
-/* ==========================
-   Export CSV
-========================== */
+
+
+/****************************************
+            EXPORT
+****************************************/
 
 function downloadExcel(){
 
 
-let csv="";
+let csv = "";
 
 
 csv += "#,MLE,NOM,N°,ETABLISSEMENT,PERIODE,STATUS\n";
+
 
 
 reservations.forEach((r,i)=>{
@@ -321,18 +283,13 @@ reservations.forEach((r,i)=>{
 
 csv +=
 
+
 `${i+1},
-
 ${r.m},
-
 ${r.nom},
-
 ${r.num},
-
 ${r.etab},
-
 ${r.periode},
-
 ${r.status}\n`;
 
 
@@ -346,7 +303,7 @@ const blob = new Blob(
 
 {
 
-type:"text/csv"
+type:"text/csv;charset=utf-8;"
 
 }
 
@@ -360,22 +317,25 @@ URL.createObjectURL(blob);
 
 
 
-const a=
+const link=
 
 document.createElement("a");
 
 
-a.href=url;
+link.href=url;
+
+link.download="Reservations.csv";
 
 
-a.download="Reservations.csv";
+document.body.appendChild(link);
 
+link.click();
 
-a.click();
-
+document.body.removeChild(link);
 
 
 URL.revokeObjectURL(url);
+
 
 
 }
@@ -383,11 +343,85 @@ URL.revokeObjectURL(url);
 
 
 
-/* ==========================
-   Init
-========================== */
 
-load();
+/****************************************
+            RENDER
+****************************************/
+
+function render(){
+
+
+const tbody = $("table");
+
+tbody.innerHTML="";
+
+
+
+reservations.forEach((r,i)=>{
+
+
+const tr = document.createElement("tr");
+
+
+
+tr.innerHTML=`
+
+<td>${i+1}</td>
+
+<td>${r.m}</td>
+
+<td>${r.nom}</td>
+
+<td>${r.num}</td>
+
+<td>${r.etab}</td>
+
+<td>${r.periode}</td>
+
+<td>${r.status}</td>
+
+<td>
+
+<button onclick="startEdit(${i})">
+
+✏️
+
+</button>
+
+
+<button
+
+onclick="del(${i})"
+
+style="background:#dc2626;color:white;">
+
+
+🗑️
+
+
+</button>
+
+</td>
+
+`;
+
+
+
+tbody.appendChild(tr);
+
+
+});
+
+
+}
+
+
+
+/****************************************
+            INIT
+****************************************/
+
+loadData();
 
 render();
 
