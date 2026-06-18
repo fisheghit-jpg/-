@@ -19,7 +19,7 @@ padding:15px;
 border-radius:10px;
 }
 
-input,select{
+input{
 width:100%;
 padding:10px;
 margin:5px 0;
@@ -81,10 +81,12 @@ background:#1e293b;
 <div class="card">
 <h3>Réservation</h3>
 
+<input id="rPeriode" placeholder="Période">
+<input id="rNom" placeholder="Nom">
 <input id="rMatricule" placeholder="Matricule">
-<input id="hotel" placeholder="Hôtel">
-<input id="num" placeholder="Num Réservation">
-<input id="date" type="text" placeholder="Période">
+<input id="rEtablissement" placeholder="Établissement">
+<input id="rElement1" placeholder="Élément de réponse 1">
+<input id="rComplement" placeholder="Complément de réponse">
 
 <button onclick="addRes()">Ajouter Réservation</button>
 </div>
@@ -92,14 +94,15 @@ background:#1e293b;
 <div class="card">
 <h3>Table Réservations</h3>
 
-<table id="bigTable">
+<table>
 <thead>
 <tr>
-<th>MLE</th>
-<th>NOM</th>
-<th>HOTEL</th>
-<th>N°</th>
 <th>PÉRIODE</th>
+<th>NOM</th>
+<th>MATRICULE</th>
+<th>ETABLISSEMENT</th>
+<th>ELEMENT DE REPONSE 1</th>
+<th>COMPLEMENT DE REPONSE</th>
 </tr>
 </thead>
 
@@ -151,12 +154,22 @@ t.innerHTML+=`
 /* ===== RESERVATION ===== */
 function addRes(){
 
-let m=document.getElementById("rMatricule").value;
-let hotel=document.getElementById("hotel").value;
-let num=document.getElementById("num").value;
-let date=document.getElementById("date").value;
+let rPeriode=document.getElementById("rPeriode").value;
+let rNom=document.getElementById("rNom").value;
+let rMatricule=document.getElementById("rMatricule").value;
+let rEtablissement=document.getElementById("rEtablissement").value;
+let rElement1=document.getElementById("rElement1").value;
+let rComplement=document.getElementById("rComplement").value;
 
-reservations.push({m,hotel,num,date});
+reservations.push({
+rPeriode,
+rNom,
+rMatricule,
+rEtablissement,
+rElement1,
+rComplement
+});
+
 save();
 renderRes();
 }
@@ -166,15 +179,14 @@ let t=document.getElementById("resTable");
 t.innerHTML="";
 
 reservations.forEach(r=>{
-let emp=employees.find(e=>e.m===r.m);
-
 t.innerHTML+=`
 <tr>
-<td>${r.m}</td>
-<td>${emp?emp.n:"Unknown"}</td>
-<td>${r.hotel}</td>
-<td>${r.num}</td>
-<td>${r.date}</td>
+<td>${r.rPeriode}</td>
+<td>${r.rNom}</td>
+<td>${r.rMatricule}</td>
+<td>${r.rEtablissement}</td>
+<td>${r.rElement1}</td>
+<td>${r.rComplement}</td>
 </tr>
 `;
 });
@@ -186,8 +198,7 @@ function sendGmail(){
 let text="Reservations:\n\n";
 
 reservations.forEach(r=>{
-let emp=employees.find(e=>e.m===r.m);
-text+=`${r.m} - ${emp?emp.n:""} - ${r.hotel} - ${r.num} - ${r.date}\n`;
+text+=`${r.rPeriode} - ${r.rNom} - ${r.rMatricule} - ${r.rEtablissement} - ${r.rElement1} - ${r.rComplement}\n`;
 });
 
 let subject="Reservations Report";
