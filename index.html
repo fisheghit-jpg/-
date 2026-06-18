@@ -1,170 +1,29 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Reservation System</title>
-
-<style>
-body{
-margin:0;
-font-family:Segoe UI;
-background:linear-gradient(135deg,#0b1220,#0f172a);
-color:#e5e7eb;
-}
-
-/* CARD */
-.card{
-background:#111827;
-margin:15px;
-padding:15px;
-border-radius:12px;
-border:1px solid rgba(212,175,55,0.18);
-box-shadow:0 0 18px rgba(212,175,55,0.08);
-}
-
-/* TITLES */
-h2,h3{
-text-align:center;
-color:#d4af37;
-}
-
-/* INPUTS */
-input{
-width:100%;
-padding:10px;
-margin:6px 0;
-border-radius:8px;
-border:1px solid rgba(212,175,55,0.2);
-background:#0f172a;
-color:white;
-outline:none;
-}
-
-input:focus{
-border-color:#d4af37;
-box-shadow:0 0 8px rgba(212,175,55,0.25);
-}
-
-/* BUTTONS */
-button{
-padding:10px 12px;
-background:#d4af37;
-border:none;
-color:#0b1220;
-border-radius:8px;
-cursor:pointer;
-margin-top:10px;
-margin-right:5px;
-font-weight:bold;
-}
-
-button:hover{
-background:#e6c84f;
-transform:scale(1.03);
-}
-
-/* TABLE */
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-border-radius:10px;
-overflow:hidden;
-}
-
-th{
-background:#0f172a;
-color:#d4af37;
-padding:10px;
-border-bottom:1px solid rgba(212,175,55,0.2);
-}
-
-td{
-padding:10px;
-border-bottom:1px solid #1f2937;
-}
-
-tr:nth-child(even){
-background:#0b1220;
-}
-
-tr:hover{
-background:#1f2937;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="card">
-<h2>Reservation System</h2>
-</div>
-
-<!-- FORM -->
-<div class="card">
-<h3>Ajouter / Modifier</h3>
-
-<input id="m" placeholder="MLE">
-<input id="nom" placeholder="NOM">
-<input id="num" placeholder="N°">
-<input id="etab" placeholder="ETABLISSEMENT">
-<input id="periode" placeholder="PERIODE">
-<input id="status" placeholder="STATUS">
-
-<button onclick="addRes()">Ajouter / Sauvegarder</button>
-<button onclick="clearForm()">Annuler</button>
-</div>
-
-<!-- SEARCH -->
-<div class="card">
-<input id="search" placeholder="Recherche..." onkeyup="searchTable()">
-</div>
-
-<!-- TABLE -->
-<div class="card">
-<h3>Table</h3>
-
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>MLE</th>
-<th>NOM</th>
-<th>N°</th>
-<th>ETABLISSEMENT</th>
-<th>PERIODE</th>
-<th>STATUS</th>
-<th>ACTIONS</th>
-</tr>
-</thead>
-
-<tbody id="table"></tbody>
-</table>
-</div>
-
 <script>
 
 let reservations = JSON.parse(localStorage.getItem("res") || "[]");
 let editIndex = -1;
 
-/* SAVE */
+/* حفظ البيانات */
 function save(){
 localStorage.setItem("res", JSON.stringify(reservations));
 }
 
-/* CLEAR */
+/* تفريغ الحقول */
 function clearForm(){
-["m","nom","num","etab","periode","status"]
-.forEach(id=>document.getElementById(id).value="");
+document.getElementById("m").value = "";
+document.getElementById("nom").value = "";
+document.getElementById("num").value = "";
+document.getElementById("etab").value = "";
+document.getElementById("periode").value = "";
+document.getElementById("status").value = "";
 
 editIndex = -1;
 }
 
-/* ADD / EDIT */
+/* إضافة أو تعديل */
 function addRes(){
 
-let r = {
+let data = {
 m: document.getElementById("m").value.trim(),
 nom: document.getElementById("nom").value.trim(),
 num: document.getElementById("num").value.trim(),
@@ -173,11 +32,11 @@ periode: document.getElementById("periode").value.trim(),
 status: document.getElementById("status").value.trim()
 };
 
-if(editIndex !== -1){
-reservations[editIndex] = {...reservations[editIndex], ...r};
-editIndex = -1;
+if(editIndex === -1){
+reservations.push(data);
 }else{
-reservations.push(r);
+reservations[editIndex] = data;
+editIndex = -1;
 }
 
 save();
@@ -185,15 +44,16 @@ render();
 clearForm();
 }
 
-/* DELETE */
+/* حذف */
 function del(i){
 reservations.splice(i,1);
 save();
 render();
 }
 
-/* EDIT */
+/* تعديل */
 function startEdit(i){
+
 let r = reservations[i];
 
 document.getElementById("m").value = r.m;
@@ -206,14 +66,15 @@ document.getElementById("status").value = r.status;
 editIndex = i;
 }
 
-/* RENDER */
+/* عرض الجدول */
 function render(){
 
-let t = document.getElementById("table");
-t.innerHTML = "";
+let table = document.getElementById("table");
+table.innerHTML = "";
 
 reservations.forEach((r,i)=>{
-t.innerHTML += `
+
+table.innerHTML += `
 <tr>
 <td>${i + 1}</td>
 <td>${r.m}</td>
@@ -224,27 +85,27 @@ t.innerHTML += `
 <td>${r.status}</td>
 <td>
 <button onclick="startEdit(${i})">✏</button>
-<button onclick="del(${i})" style="background:#ef4444;color:white;">🗑</button>
+<button onclick="del(${i})" style="background:red;color:white;">🗑</button>
 </td>
 </tr>
 `;
 });
 }
 
-/* SEARCH */
+/* بحث */
 function searchTable(){
-let v = document.getElementById("search").value.toLowerCase();
+
+let value = document.getElementById("search").value.toLowerCase();
 let rows = document.querySelectorAll("#table tr");
 
-rows.forEach(r=>{
-r.style.display = r.innerText.toLowerCase().includes(v)
+rows.forEach(row=>{
+row.style.display = row.innerText.toLowerCase().includes(value)
 ? "" : "none";
 });
+
 }
 
+/* تشغيل أولي */
 render();
 
 </script>
-
-</body>
-</html>
