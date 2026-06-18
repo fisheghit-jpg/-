@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservation System Pro</title>
+<title>Reservation System</title>
 
 <style>
 body{
@@ -55,19 +55,14 @@ tr:hover{
 background:#1e293b;
 }
 
-#todayDate{
-text-align:center;
-font-size:22px;
-color:#38bdf8;
-}
 </style>
 </head>
 
 <body>
 
-<!-- DATE -->
+<!-- TITLE (STATIC DATE OR TEXT YOU WANT) -->
 <div class="card">
-<h2 id="todayDate"></h2>
+<h2>TABLE RESERVATIONS</h2>
 </div>
 
 <!-- ADD RESERVATION -->
@@ -122,18 +117,6 @@ let reservations = JSON.parse(localStorage.getItem("res")) || [];
 function save(){
 localStorage.setItem("res", JSON.stringify(reservations));
 }
-
-/* ===== DATE AUTO ===== */
-function setDate(){
-let d=new Date();
-let months=[
-"JANVIER","FÉVRIER","MARS","AVRIL","MAI","JUIN",
-"JUILLET","AOÛT","SEPTEMBRE","OCTOBRE","NOVEMBRE","DÉCEMBRE"
-];
-document.getElementById("todayDate").innerText =
-`${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-setDate();
 
 /* ===== ADD ===== */
 function addRes(){
