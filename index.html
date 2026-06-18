@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Reservations System</title>
+<title>Reservation System FIX</title>
 
 <style>
 body{
@@ -127,25 +127,25 @@ color:#38bdf8;
 
 <script>
 
-/* DATA */
-let reservations = JSON.parse(localStorage.getItem("res")) || [];
+/* ===== DATA SAFE ===== */
+let reservations = JSON.parse(localStorage.getItem("res") || "[]");
 
-/* SAVE */
+/* ===== SAVE ===== */
 function save(){
 localStorage.setItem("res", JSON.stringify(reservations));
 }
 
-/* ADD */
+/* ===== ADD (NO UNDEFINED FIXED) ===== */
 function addRes(){
 
-let r={
-o:document.getElementById("o").value,
-m:document.getElementById("m").value,
-nom:document.getElementById("nom").value,
-num:document.getElementById("num").value,
-etab:document.getElementById("etab").value,
-periode:document.getElementById("periode").value,
-status:document.getElementById("status").value
+let r = {
+o: document.getElementById("o").value || "",
+m: document.getElementById("m").value || "",
+nom: document.getElementById("nom").value || "",
+num: document.getElementById("num").value || "",
+etab: document.getElementById("etab").value || "",
+periode: document.getElementById("periode").value || "",
+status: document.getElementById("status").value || ""
 };
 
 reservations.push(r);
@@ -153,63 +153,94 @@ save();
 render();
 }
 
-/* DELETE */
+/* ===== DELETE ===== */
 function del(i){
 reservations.splice(i,1);
 save();
 render();
 }
 
-/* RENDER */
+/* ===== RENDER (SAFE) ===== */
 function render(){
 
-let t=document.getElementById("table");
-t.innerHTML="";
+let t = document.getElementById("table");
+t.innerHTML = "";
 
 reservations.forEach((r,i)=>{
-t.innerHTML+=`
+
+t.innerHTML += `
 <tr>
-<td>${r.o}</td>
-<td>${r.m}</td>
-<td>${r.nom}</td>
-<td>${r.num}</td>
-<td>${r.etab}</td>
-<td>${r.periode}</td>
-<td>${r.status}</td>
+<td>${r.o || ""}</td>
+<td>${r.m || ""}</td>
+<td>${r.nom || ""}</td>
+<td>${r.num || ""}</td>
+<td>${r.etab || ""}</td>
+<td>${r.periode || ""}</td>
+<td>${r.status || ""}</td>
 <td><button onclick="del(${i})" style="background:red;color:white;">X</button></td>
 </tr>
 `;
 });
 }
+
 render();
 
-/* SEARCH */
+/* ===== SEARCH ===== */
 function searchTable(){
-let v=document.getElementById("search").value.toLowerCase();
-let rows=document.querySelectorAll("#table tr");
+let v = document.getElementById("search").value.toLowerCase();
+let rows = document.querySelectorAll("#table tr");
 
 rows.forEach(r=>{
-r.style.display=r.innerText.toLowerCase().includes(v)?"":"none";
+r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none";
 });
 }
 
-/* OPEN CLEAN WINDOW TABLE */
+/* ===== OPEN CLEAN WINDOW TABLE ===== */
 function openTable(){
 
-let w=window.open("","_blank");
+let w = window.open("", "_blank");
 
-let html=`
+let html = `
 <html>
 <head>
-<title>Table</title>
+<title>TABLE</title>
 <style>
-body{font-family:Segoe UI;background:#0f172a;color:white;padding:20px;}
-h2{text-align:center;color:#38bdf8;}
-table{width:100%;border-collapse:collapse;background:#0b1220;}
-th{background:#1e293b;color:#38bdf8;padding:10px;}
-td{padding:10px;border-bottom:1px solid #1e293b;}
-tr:nth-child(even){background:#0f172a;}
-tr:hover{background:#1e293b;}
+body{
+font-family:Segoe UI;
+background:#0f172a;
+color:white;
+padding:20px;
+}
+
+h2{
+text-align:center;
+color:#38bdf8;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:#0b1220;
+}
+
+th{
+background:#1e293b;
+color:#38bdf8;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #1e293b;
+}
+
+tr:nth-child(even){
+background:#0f172a;
+}
+
+tr:hover{
+background:#1e293b;
+}
 </style>
 </head>
 
@@ -219,26 +250,36 @@ tr:hover{background:#1e293b;}
 
 <table>
 <tr>
-<th>O</th><th>MLE</th><th>NOM</th><th>N°</th>
-<th>ETABLISSEMENT</th><th>PERIODE</th><th>STATUS</th>
+<th>O</th>
+<th>MLE</th>
+<th>NOM</th>
+<th>N°</th>
+<th>ETABLISSEMENT</th>
+<th>PERIODE</th>
+<th>STATUS</th>
 </tr>
 `;
 
 reservations.forEach(r=>{
-html+=`
+html += `
 <tr>
-<td>${r.o}</td>
-<td>${r.m}</td>
-<td>${r.nom}</td>
-<td>${r.num}</td>
-<td>${r.etab}</td>
-<td>${r.periode}</td>
-<td>${r.status}</td>
+<td>${r.o || ""}</td>
+<td>${r.m || ""}</td>
+<td>${r.nom || ""}</td>
+<td>${r.num || ""}</td>
+<td>${r.etab || ""}</td>
+<td>${r.periode || ""}</td>
+<td>${r.status || ""}</td>
 </tr>
 `;
 });
 
-html+=`</table></body></html>`;
+html += `
+</table>
+
+</body>
+</html>
+`;
 
 w.document.write(html);
 w.document.close();
