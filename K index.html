@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>K System</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:#0f172a;
+color:white;
+}
+
+.card{
+background:#111c33;
+margin:15px;
+padding:15px;
+border-radius:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+background:#1e293b;
+color:white;
+}
+
+button{
+padding:10px;
+background:#38bdf8;
+border:none;
+color:black;
+border-radius:8px;
+cursor:pointer;
+margin-top:10px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #1e293b;
+white-space:nowrap;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h3>➕ Ajouter Réservation</h3>
+
+<input id="m" placeholder="Matricule">
+<input id="n" placeholder="Nom">
+<input id="h" placeholder="Hôtel">
+<input id="num" placeholder="Num Réservation">
+<input id="p" placeholder="Période">
+
+<button onclick="add()">Ajouter</button>
+</div>
+
+<div class="card">
+<h3>📋 Tableau</h3>
+
+<table>
+<tbody id="table"></tbody>
+</table>
+
+<br>
+<button onclick="sendWhatsApp()">📱 Envoyer WhatsApp</button>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("k")) || [];
+
+function save(){
+localStorage.setItem("k", JSON.stringify(data));
+}
+
+function add(){
+
+let item = {
+m: m.value,
+n: n.value,
+h: h.value,
+num: num.value,
+p: p.value
+};
+
+data.push(item);
+save();
+render();
+
+m.value=n.value=h.value=num.value=p.value="";
+}
+
+function render(){
+let t = document.getElementById("table");
+t.innerHTML="";
+
+data.forEach(d=>{
+t.innerHTML += `
+<tr>
+<td>${d.m}</td>
+<td>${d.n}</td>
+<td>${d.h}</td>
+<td>${d.num}</td>
+<td>${d.p}</td>
+</tr>
+`;
+});
+}
+
+function sendWhatsApp(){
+
+let text="📋 REPORT\n\n";
+
+data.forEach(d=>{
+text += `${d.m} - ${d.n} - ${d.h} - ${d.num} - ${d.p}\n`;
+});
+
+let phone = "212600000000";
+
+window.open(
+"https://wa.me/" + phone + "?text=" + encodeURIComponent(text),
+"_blank"
+);
+}
+
+render();
+
+</script>
+
+</body>
+</html>
