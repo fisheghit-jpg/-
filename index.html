@@ -1,108 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Reservation System FIX</title>
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:#0f172a;
+color:white;
+}
+
+.card{
+background:#111827;
+margin:15px;
+padding:15px;
+border-radius:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+background:#1e293b;
+color:white;
+}
+
+button{
+padding:10px;
+margin:5px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#d4af37;
+color:#0b1220;
+font-weight:bold;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+td,th{
+padding:10px;
+border-bottom:1px solid #1e293b;
+}
+
+th{
+color:#d4af37;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2 style="text-align:center;color:#d4af37;">Reservation System</h2>
+</div>
+
+<div class="card">
+<input id="m" placeholder="MLE">
+<input id="nom" placeholder="NOM">
+<input id="num" placeholder="N°">
+<input id="etab" placeholder="ETABLISSEMENT">
+<input id="periode" placeholder="PERIODE">
+<input id="status" placeholder="STATUS">
+
+<button onclick="addRes()">Ajouter</button>
+<button onclick="clearForm()">Annuler</button>
+</div>
+
+<div class="card">
+<input id="search" onkeyup="searchTable()" placeholder="Recherche...">
+</div>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>MLE</th>
+<th>NOM</th>
+<th>N°</th>
+<th>ETABLISSEMENT</th>
+<th>PERIODE</th>
+<th>STATUS</th>
+<th>ACTIONS</th>
+</tr>
+</thead>
+
+<tbody id="table"></tbody>
+</table>
+</div>
+
 <script>
 
-let reservations = JSON.parse(localStorage.getItem("res") || "[]");
+let reservations = [];
 let editIndex = -1;
 
-
-/* ===== SAVE ===== */
-function save(){
-localStorage.setItem("res", JSON.stringify(reservations));
-}
-
-
-/* ===== GET VALUES (FIXED) ===== */
 function getData(){
-
 return {
-m: document.getElementById("m").value.trim(),
-nom: document.getElementById("nom").value.trim(),
-num: document.getElementById("num").value.trim(),
-etab: document.getElementById("etab").value.trim(),
-periode: document.getElementById("periode").value.trim(),
-status: document.getElementById("status").value.trim()
+m: document.getElementById("m").value,
+nom: document.getElementById("nom").value,
+num: document.getElementById("num").value,
+etab: document.getElementById("etab").value,
+periode: document.getElementById("periode").value,
+status: document.getElementById("status").value
 };
-
 }
 
-
-/* ===== CLEAR ===== */
 function clearForm(){
-
-document.getElementById("m").value = "";
-document.getElementById("nom").value = "";
-document.getElementById("num").value = "";
-document.getElementById("etab").value = "";
-document.getElementById("periode").value = "";
-document.getElementById("status").value = "";
-
-editIndex = -1;
-
+document.getElementById("m").value="";
+document.getElementById("nom").value="";
+document.getElementById("num").value="";
+document.getElementById("etab").value="";
+document.getElementById("periode").value="";
+document.getElementById("status").value="";
 }
 
-
-/* ===== ADD (FIXED BUTTON) ===== */
 function addRes(){
 
-let data = getData();
+let d = getData();
 
-/* مهم جداً: تحقق */
-if(data.nom === "" && data.m === "") {
-alert("Remplir les champs !");
+if(d.nom === ""){
+alert("Nom obligatoire");
 return;
 }
 
+reservations.push(d);
 
-/* إضافة */
-if(editIndex === -1){
-reservations.push(data);
-}else{
-reservations[editIndex] = data;
-editIndex = -1;
-}
-
-save();
-render();
 clearForm();
+render();
 
 }
 
+function del(i){
+reservations.splice(i,1);
+render();
+}
 
-/* ===== EDIT ===== */
-function startEdit(i){
+function render(){
+
+let t = document.getElementById("table");
+t.innerHTML="";
+
+for(let i=0;i<reservations.length;i++){
 
 let r = reservations[i];
 
-document.getElementById("m").value = r.m;
-document.getElementById("nom").value = r.nom;
-document.getElementById("num").value = r.num;
-document.getElementById("etab").value = r.etab;
-document.getElementById("periode").value = r.periode;
-document.getElementById("status").value = r.status;
-
-editIndex = i;
-
-}
-
-
-/* ===== DELETE ===== */
-function del(i){
-
-reservations.splice(i,1);
-save();
-render();
-
-}
-
-
-/* ===== RENDER ===== */
-function render(){
-
-let table = document.getElementById("table");
-table.innerHTML = "";
-
-reservations.forEach((r,i)=>{
-
-table.innerHTML += `
+t.innerHTML += `
 <tr>
 <td>${i+1}</td>
 <td>${r.m}</td>
@@ -112,32 +163,28 @@ table.innerHTML += `
 <td>${r.periode}</td>
 <td>${r.status}</td>
 <td>
-<button onclick="startEdit(${i})">✏️</button>
-<button onclick="del(${i})" style="background:red;color:white;">🗑️</button>
+<button onclick="del(${i})" style="background:red;color:white;">Delete</button>
 </td>
 </tr>
 `;
 
-});
+}
 
 }
 
-
-/* ===== SEARCH ===== */
 function searchTable(){
 
 let v = document.getElementById("search").value.toLowerCase();
 
-document.querySelectorAll("#table tr").forEach(row=>{
-row.style.display = row.innerText.toLowerCase().includes(v) ? "" : "none";
+document.querySelectorAll("#table tr").forEach(r=>{
+r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none";
 });
 
 }
 
-
-/* ===== INIT ===== */
-window.onload = function(){
 render();
-};
 
 </script>
+
+</body>
+</html>
