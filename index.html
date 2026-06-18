@@ -1,285 +1,284 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Reservation System</title>
-
-<!-- Excel Library -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<style>
-body{
-margin:0;
-font-family:Segoe UI;
-background:linear-gradient(135deg,#0b1220,#0f172a);
-color:#e5e7eb;
-}
-
-/* Cards */
-.card{
-background:#111827;
-margin:15px;
-padding:15px;
-border-radius:12px;
-border:1px solid rgba(212,175,55,0.18);
-}
-
-/* Titles */
-h2,h3{
-text-align:center;
-color:#d4af37;
-}
-
-/* Inputs */
-input{
-width:100%;
-padding:10px;
-margin:6px 0;
-border-radius:8px;
-border:1px solid rgba(212,175,55,0.2);
-background:#0f172a;
-color:white;
-outline:none;
-}
-
-input:focus{
-border-color:#d4af37;
-box-shadow:0 0 8px rgba(212,175,55,0.25);
-}
-
-/* Buttons */
-button{
-padding:10px 12px;
-background:#d4af37;
-border:none;
-color:#0b1220;
-border-radius:8px;
-cursor:pointer;
-margin:5px;
-font-weight:bold;
-transition:0.2s;
-}
-
-button:hover{
-background:#e6c84f;
-transform:scale(1.03);
-}
-
-/* Table */
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-}
-
-th{
-background:#0f172a;
-color:#d4af37;
-padding:10px;
-border-bottom:1px solid rgba(212,175,55,0.2);
-}
-
-td{
-padding:10px;
-border-bottom:1px solid #1f2937;
-}
-
-tr:nth-child(even){
-background:#0b1220;
-}
-
-tr:hover{
-background:#1f2937;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="card">
-<h2>Reservation System</h2>
-</div>
-
-<!-- FORM -->
-<div class="card">
-<h3>Ajouter / Modifier</h3>
-
-<input id="m" placeholder="MLE">
-<input id="nom" placeholder="NOM">
-<input id="num" placeholder="N°">
-<input id="etab" placeholder="ETABLISSEMENT">
-<input id="periode" placeholder="PERIODE">
-<input id="status" placeholder="STATUS">
-
-<button onclick="addRes()">Ajouter / Sauvegarder</button>
-<button onclick="clearForm()">Annuler</button>
-</div>
-
-<!-- SEARCH + EXPORT -->
-<div class="card">
-<input id="search" placeholder="Recherche..." onkeyup="searchTable()">
-<button onclick="downloadExcel()">⬇ Export Excel</button>
-</div>
-
-<!-- TABLE -->
-<div class="card">
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>MLE</th>
-<th>NOM</th>
-<th>N°</th>
-<th>ETABLISSEMENT</th>
-<th>PERIODE</th>
-<th>STATUS</th>
-<th>ACTIONS</th>
-</tr>
-</thead>
-
-<tbody id="table"></tbody>
-</table>
-</div>
-
 <script>
 
-/* ================= DATA ================= */
-let reservations = JSON.parse(localStorage.getItem("res") || "[]");
-let editIndex = -1;
+const STORAGE_KEY = "reservations";
 
-/* ================= SAVE ================= */
-function save(){
-localStorage.setItem("res", JSON.stringify(reservations));
+let reservations = [];
+let editIndex = null;
+
+
+/*=========================
+تحميل البيانات
+=========================*/
+function loadData(){
+
+    reservations = JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+    ) || [];
+
 }
 
-/* ================= CLEAR ================= */
+
+/*=========================
+حفظ البيانات
+=========================*/
+function saveData(){
+
+    localStorage.setItem(
+
+        STORAGE_KEY,
+
+        JSON.stringify(reservations)
+
+    );
+
+}
+
+
+/*=========================
+قراءة الحقول
+=========================*/
+function getFormData(){
+
+    return{
+
+        m:
+        document.getElementById("m").value.trim(),
+
+        nom:
+        document.getElementById("nom").value.trim(),
+
+        num:
+        document.getElementById("num").value.trim(),
+
+        etab:
+        document.getElementById("etab").value.trim(),
+
+        periode:
+        document.getElementById("periode").value.trim(),
+
+        status:
+        document.getElementById("status").value.trim()
+
+    };
+
+}
+
+
+
+/*=========================
+تفريغ الحقول
+=========================*/
 function clearForm(){
-m.value = "";
-nom.value = "";
-num.value = "";
-etab.value = "";
-periode.value = "";
-status.value = "";
-editIndex = -1;
+
+document.getElementById("m").value="";
+document.getElementById("nom").value="";
+document.getElementById("num").value="";
+document.getElementById("etab").value="";
+document.getElementById("periode").value="";
+document.getElementById("status").value="";
+
+editIndex=null;
+
 }
 
-/* ================= ADD / EDIT ================= */
+
+
+
+/*=========================
+إضافة / تعديل
+=========================*/
 function addRes(){
 
-let data = {
-m: m.value.trim(),
-nom: nom.value.trim(),
-num: num.value.trim(),
-etab: etab.value.trim(),
-periode: periode.value.trim(),
-status: status.value.trim()
-};
+const data=getFormData();
 
-if(editIndex === -1){
+
+if(!data.nom){
+
+alert("Nom obligatoire");
+
+return;
+
+}
+
+
+
+if(editIndex===null){
+
 reservations.push(data);
-}else{
-reservations[editIndex] = data;
-editIndex = -1;
+
 }
 
-save();
+else{
+
+reservations[editIndex]=data;
+
+editIndex=null;
+
+}
+
+
+
+saveData();
+
 render();
+
 clearForm();
+
 }
 
-/* ================= DELETE ================= */
-function del(i){
-reservations.splice(i,1);
-save();
-render();
-}
 
-/* ================= EDIT ================= */
+
+/*=========================
+تعديل
+=========================*/
 function startEdit(i){
 
-let r = reservations[i];
+const r=reservations[i];
 
-m.value = r.m;
-nom.value = r.nom;
-num.value = r.num;
-etab.value = r.etab;
-periode.value = r.periode;
-status.value = r.status;
 
-editIndex = i;
+document.getElementById("m").value=r.m;
+document.getElementById("nom").value=r.nom;
+document.getElementById("num").value=r.num;
+document.getElementById("etab").value=r.etab;
+document.getElementById("periode").value=r.periode;
+document.getElementById("status").value=r.status;
+
+
+editIndex=i;
+
 }
 
-/* ================= RENDER ================= */
-function render(){
 
-let t = document.getElementById("table");
-t.innerHTML = "";
 
-reservations.forEach((r,i)=>{
-t.innerHTML += `
-<tr>
-<td>${i+1}</td>
-<td>${r.m}</td>
-<td>${r.nom}</td>
-<td>${r.num}</td>
-<td>${r.etab}</td>
-<td>${r.periode}</td>
-<td>${r.status}</td>
-<td>
-<button onclick="startEdit(${i})">✏</button>
-<button onclick="del(${i})" style="background:#ef4444;color:white;">🗑</button>
-</td>
-</tr>`;
-});
-}
 
-/* ================= SEARCH ================= */
-function searchTable(){
-let v = search.value.toLowerCase();
+/*=========================
+حذف
+=========================*/
+function del(i){
 
-document.querySelectorAll("#table tr").forEach(r=>{
-r.style.display = r.innerText.toLowerCase().includes(v)
-? "" : "none";
-});
-}
+if(confirm("Supprimer ?")){
 
-/* ================= EXPORT EXCEL ================= */
-function downloadExcel(){
 
-let data = reservations.map((r,i)=>({
-"#": i+1,
-"MLE": r.m,
-"NOM": r.nom,
-"N°": r.num,
-"ETABLISSEMENT": r.etab,
-"PERIODE": r.periode,
-"STATUS": r.status
-}));
+reservations.splice(i,1);
 
-let ws = XLSX.utils.json_to_sheet(data);
+saveData();
 
-/* تنظيم الأعمدة */
-ws["!cols"] = [
-{wch:5},
-{wch:10},
-{wch:15},
-{wch:10},
-{wch:20},
-{wch:15},
-{wch:10}
-];
-
-let wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, "Reservations");
-
-XLSX.writeFile(wb, "Reservations.xlsx");
-}
-
-/* INIT */
 render();
 
-</script>
+}
 
-</body>
-</html>
+
+}
+
+
+
+/*=========================
+عرض الجدول
+=========================*/
+function render(){
+
+
+const table=document.getElementById("table");
+
+table.innerHTML="";
+
+
+reservations.forEach((r,index)=>{
+
+
+table.innerHTML+=`
+
+<tr>
+
+<td>${index+1}</td>
+
+<td>${r.m}</td>
+
+<td>${r.nom}</td>
+
+<td>${r.num}</td>
+
+<td>${r.etab}</td>
+
+<td>${r.periode}</td>
+
+<td>${r.status}</td>
+
+<td>
+
+<button onclick="startEdit(${index})">
+
+✏️
+
+</button>
+
+
+<button onclick="del(${index})">
+
+🗑️
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+/*=========================
+بحث
+=========================*/
+function searchTable(){
+
+const text=
+document.getElementById("search")
+.value
+.toLowerCase();
+
+
+const rows=
+document.querySelectorAll("#table tr");
+
+
+rows.forEach(row=>{
+
+row.style.display=
+
+row.innerText
+.toLowerCase()
+.includes(text)
+
+? ""
+
+:
+
+"none";
+
+});
+
+
+}
+
+
+
+
+/*=========================
+تشغيل النظام
+=========================*/
+
+loadData();
+
+render();
+
+
+</script>
